@@ -93,6 +93,8 @@ import com.digiarea.jse.VariableDeclarator;
 import com.digiarea.jse.VariableDeclaratorId;
 import com.digiarea.jse.VoidType;
 import com.digiarea.jse.WildcardType;
+import com.digiarea.jse.builder.ModelHierarchy;
+import com.digiarea.jse.builder.ModelBuilder.BuilderType;
 import com.digiarea.jse.es5.Context;
 import com.digiarea.jse.utils.NodeUtils;
 import com.digiarea.jse.visitor.GenericVisitor;

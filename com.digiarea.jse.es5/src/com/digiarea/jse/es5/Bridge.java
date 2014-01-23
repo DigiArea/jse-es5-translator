@@ -14,6 +14,7 @@ import com.digiarea.jse.arrow.Quiver;
 import com.digiarea.jse.arrow.Renamer;
 import com.digiarea.jse.arrow.Resolver;
 import com.digiarea.jse.arrow.Resolver.NamesTo;
+import com.digiarea.jse.builder.SimpleModelHierarchy;
 import com.digiarea.jse.es5.visitor.Overloader;
 import com.digiarea.jse.es5.visitor.Visitor;
 
@@ -66,7 +67,7 @@ public class Bridge implements Arrow<Project, com.digiarea.es5.Project> {
 	public com.digiarea.es5.Project arrow(Project input) throws Exception {
 		Project p = quiver.arrow(input);
 		Context ctx = new Context();
-		Visitor bridger = new Visitor(new ModelHierarchy(p), procesBodies);
+		Visitor bridger = new Visitor(new SimpleModelHierarchy(p), procesBodies);
 		return (com.digiarea.es5.Project) bridger.visit(p, ctx);
 	}
 
