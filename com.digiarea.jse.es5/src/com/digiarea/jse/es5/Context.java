@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package com.digiarea.jse.es5;
 
 import com.digiarea.jse.CompilationUnit;

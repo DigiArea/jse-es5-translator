@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package com.digiarea.jse.es5.visitor;
 
 import java.util.ArrayList;
