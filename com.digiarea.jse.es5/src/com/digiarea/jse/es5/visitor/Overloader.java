@@ -1,7 +1,6 @@
 package com.digiarea.jse.es5.visitor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,37 +9,31 @@ import java.util.Set;
 
 import com.digiarea.common.Arrow;
 import com.digiarea.jse.AnnotationExpr;
-import com.digiarea.jse.ArrayAccessExpr;
-import com.digiarea.jse.BinaryExpr;
+import com.digiarea.jse.BinaryExpr.BinaryOperator;
 import com.digiarea.jse.BlockStmt;
 import com.digiarea.jse.BodyDeclaration;
-import com.digiarea.jse.CastExpr;
 import com.digiarea.jse.ClassDeclaration;
+import com.digiarea.jse.ClassOrInterfaceType;
 import com.digiarea.jse.ConstructorDeclaration;
 import com.digiarea.jse.Ellipsis;
 import com.digiarea.jse.EnumDeclaration;
 import com.digiarea.jse.Expression;
-import com.digiarea.jse.ExpressionStmt;
-import com.digiarea.jse.FieldAccessExpr;
 import com.digiarea.jse.IfStmt;
-import com.digiarea.jse.InstanceOfExpr;
-import com.digiarea.jse.IntegerLiteralExpr;
 import com.digiarea.jse.InterfaceDeclaration;
 import com.digiarea.jse.JavadocComment;
 import com.digiarea.jse.MethodDeclaration;
-import com.digiarea.jse.NameExpr;
-import com.digiarea.jse.NullLiteralExpr;
+import com.digiarea.jse.Modifiers;
+import com.digiarea.jse.NodeFacade;
 import com.digiarea.jse.Parameter;
 import com.digiarea.jse.PrimitiveType;
+import com.digiarea.jse.PrimitiveType.Primitive;
 import com.digiarea.jse.Project;
 import com.digiarea.jse.ReferenceType;
-import com.digiarea.jse.ReturnStmt;
 import com.digiarea.jse.Statement;
 import com.digiarea.jse.Type;
 import com.digiarea.jse.TypeDeclaration;
 import com.digiarea.jse.TypeParameter;
 import com.digiarea.jse.VariableDeclarationExpr;
-import com.digiarea.jse.VariableDeclaratorId;
 import com.digiarea.jse.VoidType;
 import com.digiarea.jse.utils.LangUtils;
 import com.digiarea.jse.visitor.VoidVisitorAdapter;
@@ -117,7 +110,7 @@ public class Overloader implements Arrow<Project, Project> {
 				}
 			}
 			// replace members
-			typeDeclaration.setMembers(declarations);
+			typeDeclaration.setMembers(NodeFacade.NodeList(declarations));
 		}
 
 		private static String MAGIC_ARGUMENTS = "arguments";
@@ -127,16 +120,16 @@ public class Overloader implements Arrow<Project, Project> {
 			// FIXME - fix super(...) and this(...) statements
 			String paramName = makeParamName(value);
 			List<AnnotationExpr> annotations = new ArrayList<AnnotationExpr>();
-			JavadocComment javaDoc = new JavadocComment("");
+			JavadocComment javaDoc = NodeFacade.JavadocComment("");
 			int modifiers = 0;
 			List<TypeParameter> typeParameters = null;
 			List<Parameter> parameters = makeParameters(paramName);
-			List<NameExpr> throwsList = new ArrayList<NameExpr>();
+			List<ClassOrInterfaceType> throwsList = new ArrayList<>();
 			BlockStmt body = null;
 			IfStmt topIfStmt = null;
 			IfStmt tmpIfStmt = null;
 			for (ConstructorDeclaration item : value) {
-				modifiers = makeModifiers(modifiers, item.getModifiers());
+				modifiers = makeModifiers(modifiers, item.getModifiers().getModifiers());
 				typeParameters = makeTypeParameters(typeParameters,
 						item.getTypeParameters());
 				BlockStmt stuff = item.getBlock();
@@ -152,20 +145,21 @@ public class Overloader implements Arrow<Project, Project> {
 				makeJavaDoc(javaDoc, item.getJavaDoc());
 			}
 			if (topIfStmt != null) {
-				if (ModifierSet.isAbstract(modifiers)) {
-					modifiers = ModifierSet.removeModifier(modifiers,
-							ModifierSet.ABSTRACT);
+				if (Modifiers.isAbstract(modifiers)) {
+					modifiers = Modifiers.removeModifier(modifiers,
+							Modifiers.ABSTRACT);
 				}
-				body = new BlockStmt(Arrays.asList((Statement) topIfStmt));
+				body = NodeFacade.BlockStmt(NodeFacade
+						.NodeList((Statement) topIfStmt));
 			}
 			ConstructorDeclaration result = new ConstructorDeclaration();
 			result.setName(key);
-			result.setAnnotations(annotations);
+			result.setAnnotations(NodeFacade.NodeList(annotations));
 			result.setJavaDoc(javaDoc);
-			result.setModifiers(modifiers);
-			result.setTypeParameters(typeParameters);
+			result.setModifiers(NodeFacade.Modifiers(modifiers));
+			result.setTypeParameters(NodeFacade.NodeList(typeParameters));
 			// result.setParameters(parameters);
-			result.setThrowsList(throwsList);
+			result.setThrowsList(NodeFacade.NodeList(throwsList));
 			result.setBlock(body);
 			return result;
 		}
@@ -174,21 +168,21 @@ public class Overloader implements Arrow<Project, Project> {
 				Set<MethodDeclaration> value) {
 			String paramName = makeParamName(key, value);
 			List<AnnotationExpr> annotations = new ArrayList<AnnotationExpr>();
-			JavadocComment javaDoc = new JavadocComment("");
+			JavadocComment javaDoc = NodeFacade.JavadocComment("");
 			int modifiers = 0;
 			List<TypeParameter> typeParameters = null;
-			Type type = NodeUtils.VOID_TYPE;
+			Type type = NodeFacade.VOID_TYPE;
 			List<Parameter> parameters = makeParameters(paramName);
-			List<NameExpr> throwsList = new ArrayList<NameExpr>();
+			List<ClassOrInterfaceType> throwsList = new ArrayList<>();
 			BlockStmt body = null;
 			IfStmt topIfStmt = null;
 			IfStmt tmpIfStmt = null;
 			for (MethodDeclaration item : value) {
-				modifiers = makeModifiers(modifiers, item.getModifiers());
+				modifiers = makeModifiers(modifiers, item.getModifiers().getModifiers());
 				typeParameters = makeTypeParameters(typeParameters,
 						item.getTypeParameters());
 				type = makeType(type, item.getType());
-				BlockStmt stuff = item.getBody();
+				BlockStmt stuff = item.getBlock();
 				if (stuff != null) {
 					tmpIfStmt = makeIf(paramName, item.getParameters(), stuff,
 							tmpIfStmt);
@@ -202,30 +196,31 @@ public class Overloader implements Arrow<Project, Project> {
 			}
 			List<Statement> statements = new ArrayList<Statement>();
 			if (topIfStmt != null) {
-				if (ModifierSet.isAbstract(modifiers)) {
-					modifiers = ModifierSet.removeModifier(modifiers,
-							ModifierSet.ABSTRACT);
+				if (Modifiers.isAbstract(modifiers)) {
+					modifiers = Modifiers.removeModifier(modifiers,
+							Modifiers.ABSTRACT);
 				}
 				statements.add(topIfStmt);
 				if (type == null) {
-					statements.add(new ReturnStmt(new NullLiteralExpr()));
+					statements.add(NodeFacade.ReturnStmt(NodeFacade
+							.NullLiteralExpr()));
 				}
-				body = new BlockStmt(statements);
+				body = NodeFacade.BlockStmt(statements);
 			}
 			if (type == null) {
-				type = NodeUtils.toClassOrInterfaceType(JAVA_LANG_OBJECT);
+				type = NodeFacade.ClassOrInterfaceType(JAVA_LANG_OBJECT);
 
 			}
 			MethodDeclaration result = new MethodDeclaration();
 			result.setName(key);
-			result.setAnnotations(annotations);
+			result.setAnnotations(NodeFacade.NodeList(annotations));
 			result.setJavaDoc(javaDoc);
-			result.setModifiers(modifiers);
-			result.setTypeParameters(typeParameters);
+			result.setModifiers(NodeFacade.Modifiers(modifiers));
+			result.setTypeParameters(NodeFacade.NodeList(typeParameters));
 			result.setType(type);
 			// result.setParameters(parameters);
-			result.setThrowsList(throwsList);
-			result.setBody(body);
+			result.setThrowsList(NodeFacade.NodeList(throwsList));
+			result.setBlock(body);
 			return result;
 		}
 
@@ -235,11 +230,12 @@ public class Overloader implements Arrow<Project, Project> {
 			}
 		}
 
-		private void makeThrows(List<NameExpr> throwsList, List<NameExpr> throwz) {
+		private void makeThrows(List<ClassOrInterfaceType> throwsList,
+				List<ClassOrInterfaceType> throwz) {
 			if (throwz != null) {
-				for (NameExpr nameExpr : throwz) {
-					if (!throwsList.contains(nameExpr)) {
-						throwsList.add(nameExpr);
+				for (ClassOrInterfaceType type : throwz) {
+					if (!throwsList.contains(type)) {
+						throwsList.add(type);
 					}
 				}
 			}
@@ -265,7 +261,7 @@ public class Overloader implements Arrow<Project, Project> {
 			if (body.getStatements() != null) {
 				statements.addAll(body.getStatements());
 			}
-			ifStatement.setThenStmt(new BlockStmt(statements));
+			ifStatement.setThenStmt(NodeFacade.BlockStmt(statements));
 			if (ifStmt != null) {
 				ifStmt.setElseStmt(ifStatement);
 			}
@@ -278,16 +274,18 @@ public class Overloader implements Arrow<Project, Project> {
 			if (parameters != null && parameters.size() > 0) {
 				int index = 0;
 				for (Parameter parameter : parameters) {
-					Expression init = new CastExpr(parameter.getType(),
-							new ArrayAccessExpr(new NameExpr(paramName),
-									new IntegerLiteralExpr(index)));
-					VariableDeclarationExpr expr = NodeUtils
-							.createVariableDeclarationExpr(parameter.getType(),
+					Expression init = NodeFacade.CastExpr(
+							parameter.getType(),
+							NodeFacade.ArrayAccessExpr(
+									NodeFacade.NameExpr(paramName),
+									NodeFacade.IntegerLiteralExpr(index)));
+					VariableDeclarationExpr expr = NodeFacade
+							.VariableDeclarationExpr(parameter.getType(),
 									parameter.getId().getName(), init);
-					if (ModifierSet.isFinal(parameter.getModifiers())) {
-						expr.setModifiers(ModifierSet.FINAL);
+					if (parameter.getModifiers().isFinal()) {
+						expr.setModifiers(NodeFacade.Modifiers(Modifiers.FINAL));
 					}
-					statements.add(new ExpressionStmt(expr));
+					statements.add(NodeFacade.ExpressionStmt(expr));
 					index++;
 				}
 			}
@@ -300,16 +298,18 @@ public class Overloader implements Arrow<Project, Project> {
 			if (parameters != null) {
 				size = parameters.size();
 			}
-			Expression result = new BinaryExpr(new FieldAccessExpr(
-					new NameExpr(paramName), "length"), new IntegerLiteralExpr(
-					size), BinaryOperator.equals);
+			Expression result = NodeFacade.BinaryExpr(
+					NodeFacade.FieldAccessExpr(paramName, "length"),
+					NodeFacade.IntegerLiteralExpr(size), BinaryOperator.equals);
 			if (size > 0) {
 				int index = 0;
 				for (Parameter parameter : parameters) {
 					Type type = fixType(parameter.getType());
-					result = new BinaryExpr(result, new InstanceOfExpr(
-							new ArrayAccessExpr(new NameExpr(paramName),
-									new IntegerLiteralExpr(index)), type),
+					result = NodeFacade.BinaryExpr(result,
+							NodeFacade.InstanceOfExpr(NodeFacade
+									.ArrayAccessExpr(NodeFacade
+											.NameExpr(paramName), NodeFacade
+											.IntegerLiteralExpr(index)), type),
 							BinaryOperator.and);
 					index++;
 				}
@@ -320,8 +320,8 @@ public class Overloader implements Arrow<Project, Project> {
 		private Type fixType(Type type) {
 			if (type instanceof ReferenceType) {
 				ReferenceType rType = (ReferenceType) type;
-				return new ReferenceType(fixType(rType.getType()),
-						rType.getArrayCount());
+				return NodeFacade.ReferenceType(fixType(rType.getType()),
+						rType.getSlots());
 			} else if (type instanceof PrimitiveType) {
 				Primitive primitive = ((PrimitiveType) type).getType();
 				switch (primitive) {
@@ -349,9 +349,9 @@ public class Overloader implements Arrow<Project, Project> {
 		private List<Parameter> makeParameters(String paramName) {
 			List<Parameter> parameters = new ArrayList<Parameter>();
 			Parameter parameter = new Parameter();
-			parameter.setId(new VariableDeclaratorId(paramName));
-			parameter.setType(NodeUtils
-					.toClassOrInterfaceType(JAVA_LANG_OBJECT));
+			parameter.setId(NodeFacade.VariableDeclaratorId(paramName));
+			parameter
+					.setType(NodeFacade.ClassOrInterfaceType(JAVA_LANG_OBJECT));
 			parameter.setEllipsis(new Ellipsis());
 			parameters.add(parameter);
 			return parameters;
@@ -374,7 +374,7 @@ public class Overloader implements Arrow<Project, Project> {
 
 		private int makeModifiers(int modifiers, int itemModifiers) {
 			// TODO modifiers
-			return ModifierSet.addModifier(modifiers, itemModifiers);
+			return Modifiers.addModifier(modifiers, itemModifiers);
 		}
 
 		private String makeParamName(Set<ConstructorDeclaration> value) {

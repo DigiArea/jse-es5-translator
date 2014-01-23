@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.digiarea.common.utils.SourcePrinter;
-import com.digiarea.es5.AllocationExpression;
 import com.digiarea.es5.ArrayAccessExpression;
 import com.digiarea.es5.ArrayLiteral;
 import com.digiarea.es5.AssignmentExpression;
@@ -15,18 +14,14 @@ import com.digiarea.es5.BinaryExpression;
 import com.digiarea.es5.BinaryExpression.BinaryOperator;
 import com.digiarea.es5.Block;
 import com.digiarea.es5.BlockComment;
-import com.digiarea.es5.BooleanLiteral;
 import com.digiarea.es5.BreakStatement;
 import com.digiarea.es5.CallExpression;
-import com.digiarea.es5.CaseBlock;
 import com.digiarea.es5.CaseClause;
 import com.digiarea.es5.CatchClause;
 import com.digiarea.es5.Comment;
 import com.digiarea.es5.CompilationUnit;
 import com.digiarea.es5.ConditionalExpression;
 import com.digiarea.es5.ContinueStatement;
-import com.digiarea.es5.DecimalLiteral;
-import com.digiarea.es5.DefaultClause;
 import com.digiarea.es5.DoWhileStatement;
 import com.digiarea.es5.EmptyStatement;
 import com.digiarea.es5.EnclosedExpression;
@@ -36,25 +31,20 @@ import com.digiarea.es5.FieldAccessExpression;
 import com.digiarea.es5.ForStatement;
 import com.digiarea.es5.ForeachStatement;
 import com.digiarea.es5.FunctionExpression;
-import com.digiarea.es5.HexIntegerLiteral;
 import com.digiarea.es5.IdentifierName;
 import com.digiarea.es5.IfStatement;
 import com.digiarea.es5.JSDocComment;
 import com.digiarea.es5.LabelledStatement;
 import com.digiarea.es5.LineComment;
-import com.digiarea.es5.NewExpression;
 import com.digiarea.es5.Node;
-import com.digiarea.es5.NullLiteral;
+import com.digiarea.es5.NodeFacade;
 import com.digiarea.es5.ObjectLiteral;
 import com.digiarea.es5.Parameter;
 import com.digiarea.es5.Project;
 import com.digiarea.es5.PropertyAssignment;
 import com.digiarea.es5.PutAssignment;
 import com.digiarea.es5.ReturnStatement;
-import com.digiarea.es5.SequenceExpression;
 import com.digiarea.es5.Statement;
-import com.digiarea.es5.StringLiteralDouble;
-import com.digiarea.es5.StringLiteralSingle;
 import com.digiarea.es5.SwitchStatement;
 import com.digiarea.es5.ThisExpression;
 import com.digiarea.es5.ThrowStatement;
@@ -68,19 +58,16 @@ import com.digiarea.es5.WithStatement;
 import com.digiarea.jse.AnnotationDeclaration;
 import com.digiarea.jse.AnnotationMemberDeclaration;
 import com.digiarea.jse.ArraySlot;
-import com.digiarea.jse.BlockStmt;
 import com.digiarea.jse.BodyDeclaration;
 import com.digiarea.jse.ClassDeclaration;
 import com.digiarea.jse.ClassOrInterfaceType;
 import com.digiarea.jse.ConstructorDeclaration;
 import com.digiarea.jse.Ellipsis;
 import com.digiarea.jse.EnumDeclaration;
-import com.digiarea.jse.ExplicitConstructorInvocationStmt;
 import com.digiarea.jse.FieldDeclaration;
 import com.digiarea.jse.InitializerDeclaration;
 import com.digiarea.jse.InstanceOfExpr;
 import com.digiarea.jse.InterfaceDeclaration;
-import com.digiarea.jse.JavadocComment;
 import com.digiarea.jse.LambdaBlock;
 import com.digiarea.jse.LambdaExpr;
 import com.digiarea.jse.MethodDeclaration;
@@ -94,10 +81,8 @@ import com.digiarea.jse.PrimitiveType;
 import com.digiarea.jse.PrimitiveType.Primitive;
 import com.digiarea.jse.QualifiedNameExpr;
 import com.digiarea.jse.ReferenceType;
-import com.digiarea.jse.StringLiteralExpr;
 import com.digiarea.jse.SuperExpr;
 import com.digiarea.jse.SwitchEntryStmt;
-import com.digiarea.jse.ThisExpr;
 import com.digiarea.jse.ThrowStmt;
 import com.digiarea.jse.Type;
 import com.digiarea.jse.TypeDeclaration;
@@ -106,6 +91,7 @@ import com.digiarea.jse.VariableDeclaratorId;
 import com.digiarea.jse.VoidType;
 import com.digiarea.jse.WildcardType;
 import com.digiarea.jse.es5.Context;
+import com.digiarea.jse.utils.NodeUtils;
 import com.digiarea.jse.visitor.GenericVisitor;
 
 public class Visitor implements GenericVisitor<Node, Context> {
@@ -159,7 +145,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		TypeDeclaration oldDecl = ctx.getTypeDeclaration();
 		ctx.setTypeDeclaration(n);
 		ctx.addEnclosure(n.getName());
-		Block img = new Block();
+		Block img = NodeFacade.Block();
 		if (n.getMembers() != null) {
 			List<Statement> fields = new ArrayList<Statement>();
 			List<Statement> statik = new ArrayList<Statement>();
@@ -170,7 +156,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				if (item != null) {
 					if (item instanceof FieldDeclaration) {
 						FieldDeclaration field = (FieldDeclaration) item;
-						if (ModifierSet.isStatic(field.getModifiers())) {
+						if (field.getModifiers().isStatic()) {
 							statik.add((Statement) item.accept(this, ctx));
 						} else {
 							fields.add((Statement) item.accept(this, ctx));
@@ -186,12 +172,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			}
 			if (constructors.isEmpty()) {
 				// add default constructor if needed
-				ConstructorDeclaration constructor = new ConstructorDeclaration(
-						ModifierSet.PUBLIC, n.getName());
-				com.digiarea.jse.Statement explicitConstructorInvocationStmt = new ExplicitConstructorInvocationStmt(
-						false, null, null);
-				constructor.setBlock(new BlockStmt(Arrays
-						.asList(explicitConstructorInvocationStmt)));
+				ConstructorDeclaration constructor = com.digiarea.jse.NodeFacade
+						.ConstructorDeclaration(Modifiers.PUBLIC, n.getName());
+				com.digiarea.jse.Statement explicitConstructorInvocationStmt = com.digiarea.jse.NodeFacade
+						.ExplicitConstructorInvocationStmt();
+				constructor.setBlock(com.digiarea.jse.NodeFacade
+						.BlockStmt(Arrays
+								.asList(explicitConstructorInvocationStmt)));
 				constructors.add((Statement) constructor.accept(this, ctx));
 			} else {
 				for (Statement statement : constructors) {
@@ -199,10 +186,11 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					FunctionExpression functionExpression = (FunctionExpression) ((AssignmentExpression) constructor
 							.getExpression()).getValue();
 					List<Statement> body = new ArrayList<Statement>();
-					if (functionExpression.getBody().getStmts() != null) {
-						body.addAll(functionExpression.getBody().getStmts());
+					if (functionExpression.getBody().getStatements() != null) {
+						body.addAll(functionExpression.getBody()
+								.getStatements());
 					}
-					functionExpression.setBody(new Block(body));
+					functionExpression.setBody(NodeFacade.Block(body));
 				}
 			}
 			ExpressionStatement inheritStmt = null;
@@ -219,7 +207,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			members.addAll(inner);
 			members.addAll(fields);
 			members.addAll(statik);
-			img.setStmts(members);
+			img.setStatements(NodeFacade.NodeList(members));
 		}
 		// we add comments from Class and Interfaces to goog.provide declaration
 		// if (n.getJavaDoc() != null) {
@@ -232,29 +220,34 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	private Statement makePrototype(String decl, String name,
 			Expression expression) {
-		return new ExpressionStatement(new AssignmentExpression(
-				new FieldAccessExpression(new FieldAccessExpression(
-						new IdentifierName(decl), new IdentifierName(
-								Visitor.PROTOTYPE)), new IdentifierName(name)),
-				expression, AssignOperator.assign));
+		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
+				NodeFacade.FieldAccessExpression(
+						NodeFacade.FieldAccessExpression(
+								NodeFacade.IdentifierName(decl),
+								NodeFacade.IdentifierName(Visitor.PROTOTYPE)),
+						NodeFacade.IdentifierName(name)), expression,
+				AssignOperator.assign));
 	}
 
 	private Statement makeConstructor(String decl, Expression expression) {
-		return new ExpressionStatement(new AssignmentExpression(
-				new FieldAccessExpression(new IdentifierName(decl), null),
-				expression, AssignOperator.assign));
+		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
+				NodeFacade.FieldAccessExpression(
+						NodeFacade.IdentifierName(decl), null), expression,
+				AssignOperator.assign));
 	}
 
 	private Statement makeStatic(String decl, String name, Expression expression) {
-		return new ExpressionStatement(new AssignmentExpression(
-				new FieldAccessExpression(new IdentifierName(decl),
-						new IdentifierName(name)), expression,
+		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
+				NodeFacade.FieldAccessExpression(
+						NodeFacade.IdentifierName(decl),
+						NodeFacade.IdentifierName(name)), expression,
 				AssignOperator.assign));
 	}
 
 	private Statement makeSimple(String name, FunctionExpression expression) {
-		return new ExpressionStatement(new AssignmentExpression(
-				new IdentifierName(name), expression, AssignOperator.assign));
+		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
+				NodeFacade.IdentifierName(name), expression,
+				AssignOperator.assign));
 	}
 
 	private Node makeVariable(Context ctx, String id,
@@ -265,26 +258,29 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			Expression head = null;
 			if (ctx.isAnonymousClass()) {
 				head = null;
-			} else if (ModifierSet.isStatic(field.getModifiers())) {
-				head = new FieldAccessExpression(new IdentifierName(
-						getFullName(ctx)), null);
+			} else if (field.getModifiers().isStatic()) {
+				head = NodeFacade.FieldAccessExpression(
+						NodeFacade.IdentifierName(getFullName(ctx)), null);
 			} else {
-				// head = new ThisExpression();
-				head = new FieldAccessExpression(new IdentifierName(
-						getFullName(ctx) + "." + PROTOTYPE), null);
+				// head = NodeFacade.ThisExpression();
+				head = NodeFacade.FieldAccessExpression(
+						NodeFacade.IdentifierName(getFullName(ctx) + "."
+								+ PROTOTYPE), null);
 			}
-			Expression img = head == null ? new IdentifierName(id)
-					: new FieldAccessExpression(head, new IdentifierName(id));
+			Expression img = head == null ? NodeFacade.IdentifierName(id)
+					: NodeFacade.FieldAccessExpression(head,
+							NodeFacade.IdentifierName(id));
 			if (init != null) {
-				img = new AssignmentExpression(img, (Expression) init.accept(
-						this, ctx), AssignOperator.assign);
+				img = NodeFacade.AssignmentExpression(img,
+						(Expression) init.accept(this, ctx),
+						AssignOperator.assign);
 			} else {
-				img = new AssignmentExpression(img,
+				img = NodeFacade.AssignmentExpression(img,
 						getDefault(field.getType()), AssignOperator.assign);
 			}
-			return new ExpressionStatement(img);
+			return NodeFacade.ExpressionStatement(img);
 		} else {
-			VariableDeclaration img = new VariableDeclaration();
+			VariableDeclaration img = NodeFacade.VariableDeclaration();
 			if (id != null) {
 				img.setName(id);
 			}
@@ -298,12 +294,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	private Expression getDefault(Type type) {
 		if (type instanceof PrimitiveType) {
 			if (((PrimitiveType) type).getType() == Primitive.Boolean) {
-				return new BooleanLiteral(false);
+				return NodeFacade.BooleanLiteral(false);
 			} else {
-				return new DecimalLiteral("0");
+				return NodeFacade.DecimalLiteral("0");
 			}
 		} else {
-			return new NullLiteral();
+			return NodeFacade.NullLiteral();
 		}
 	}
 
@@ -316,12 +312,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.AnnotationMemberDeclaration n,
 			Context ctx) throws Exception {
-		FunctionExpression img = new FunctionExpression();
-		img.setBody(new Block());
+		FunctionExpression img = NodeFacade.FunctionExpression();
+		img.setBody(NodeFacade.Block());
 		Statement statement = null;
 		if (ctx.isAnonymousClass()) {
 			statement = makeSimple(n.getName(), img);
-		} else if (ModifierSet.isStatic(n.getModifiers())) {
+		} else if (n.getModifiers().isStatic()) {
 			statement = makeStatic(getFullName(ctx), n.getName(), img);
 		} else {
 			statement = makePrototype(getFullName(ctx), n.getName(), img);
@@ -331,7 +327,8 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (n.getJavaDoc() != null) {
 			statement.setComment((Comment) n.getJavaDoc().accept(this, ctx));
 		} else {
-			statement.setComment((Comment) visit(new JavadocComment(), ctx));
+			statement.setComment((Comment) visit(
+					com.digiarea.jse.NodeFacade.JavadocComment(), ctx));
 		}
 		ctx.setParent(oldParent);
 		return statement;
@@ -340,7 +337,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ArrayAccessExpr n, Context ctx)
 			throws Exception {
-		ArrayAccessExpression img = new ArrayAccessExpression();
+		ArrayAccessExpression img = NodeFacade.ArrayAccessExpression();
 		if (n.getName() != null) {
 			img.setName((Expression) n.getName().accept(this, ctx));
 		}
@@ -356,23 +353,24 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (n.getInitializer() != null) {
 			return (ArrayLiteral) n.getInitializer().accept(this, ctx);
 		} else {
-			Expression scope = new IdentifierName("Array");
-			CallExpression img = new CallExpression(scope, null);
+			Expression scope = NodeFacade.IdentifierName("Array");
+			CallExpression img = NodeFacade.CallExpression(scope, null);
 			List<Expression> values = new ArrayList<Expression>();
-			for (com.digiarea.jse.Expression item : n.getDimensions()) {
-				if (item != null) {
-					values.add((Expression) item.accept(this, ctx));
+			for (ArraySlot slot : n.getSlots()) {
+				if (slot != null) {
+					values.add((Expression) slot.getExpression().accept(this,
+							ctx));
 				}
 			}
-			img.setArgs(values);
-			return new AllocationExpression(img);
+			img.setArgs(NodeFacade.NodeList(values));
+			return NodeFacade.AllocationExpression(img);
 		}
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.ArrayInitializerExpr n, Context ctx)
 			throws Exception {
-		ArrayLiteral img = new ArrayLiteral();
+		ArrayLiteral img = NodeFacade.ArrayLiteral();
 		if (n.getValues() != null) {
 			List<Expression> values = new ArrayList<Expression>();
 			for (com.digiarea.jse.Expression item : n.getValues()) {
@@ -380,7 +378,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					values.add((Expression) item.accept(this, ctx));
 				}
 			}
-			img.setExpressions(values);
+			img.setExpressions(NodeFacade.NodeList(values));
 		}
 		return img;
 	}
@@ -408,7 +406,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.AssignExpr.AssignOperator n, Context ctx)
 			throws Exception {
-		AssignmentExpression img = new AssignmentExpression();
+		AssignmentExpression img = NodeFacade.AssignmentExpression();
 		AssignOperator operator = null;
 		switch (n) {
 		case and:
@@ -469,7 +467,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.BinaryExpr.BinaryOperator n, Context ctx)
 			throws Exception {
-		BinaryExpression img = new BinaryExpression();
+		BinaryExpression img = NodeFacade.BinaryExpression();
 		BinaryOperator operator = null;
 		switch (n) {
 		case and:
@@ -539,7 +537,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.BlockComment n, Context ctx)
 			throws Exception {
-		BlockComment img = new BlockComment();
+		BlockComment img = NodeFacade.BlockComment();
 		img.setContent("/*" + n.getContent() + "*/");
 		return img;
 	}
@@ -547,7 +545,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.BlockStmt n, Context ctx)
 			throws Exception {
-		Block img = new Block();
+		Block img = NodeFacade.Block();
 		if (n.getStatements() != null) {
 			List<Statement> stmts = new ArrayList<Statement>();
 			for (com.digiarea.jse.Statement item : n.getStatements()) {
@@ -555,7 +553,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					stmts.add((Statement) item.accept(this, ctx));
 				}
 			}
-			img.setStmts(stmts);
+			img.setStatements(NodeFacade.NodeList(stmts));
 		}
 		return img;
 	}
@@ -563,13 +561,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.BooleanLiteralExpr n, Context ctx)
 			throws Exception {
-		return new BooleanLiteral(n.isValue());
+		return NodeFacade.BooleanLiteral(n.isValue());
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.BreakStmt n, Context ctx)
 			throws Exception {
-		BreakStatement img = new BreakStatement();
+		BreakStatement img = NodeFacade.BreakStatement();
 		img.setIdentifier(n.getId());
 		return img;
 	}
@@ -583,7 +581,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.CatchClause n, Context ctx)
 			throws Exception {
-		CatchClause img = new CatchClause();
+		CatchClause img = NodeFacade.CatchClause();
 		// FIXME
 		img.setString(n.getName());
 		if (n.getCatchBlock() != null) {
@@ -595,7 +593,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.CharLiteralExpr n, Context ctx)
 			throws Exception {
-		return new StringLiteralSingle(String.valueOf((int) n.getValue()
+		return NodeFacade.StringLiteralSingle(String.valueOf((int) n.getValue()
 				.charAt(0)));
 	}
 
@@ -610,11 +608,11 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			throws Exception {
 		com.digiarea.jse.Node parent = ctx.getParent();
 		ctx.setParent(n);
-		FieldAccessExpression img = new FieldAccessExpression();
+		FieldAccessExpression img = NodeFacade.FieldAccessExpression();
 		if (n.getType() != null) {
 			img.setScope((Expression) n.getType().accept(this, ctx));
 		}
-		img.setField(new IdentifierName("class"));
+		img.setField(NodeFacade.IdentifierName("class"));
 		ctx.setParent(parent);
 		return img;
 	}
@@ -622,7 +620,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ClassOrInterfaceType n, Context ctx)
 			throws Exception {
-		FieldAccessExpression img = new FieldAccessExpression();
+		FieldAccessExpression img = NodeFacade.FieldAccessExpression();
 		if (n.getScope() != null) {
 			img.setScope((Expression) n.getScope().accept(this, ctx));
 		}
@@ -636,7 +634,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				if (img.getScope() != null) {
 					img.setField((IdentifierName) expression);
 				} else {
-					return new IdentifierName(expression.toString());
+					return NodeFacade.IdentifierName(expression.toString());
 				}
 			} else {
 				return (FieldAccessExpression) expression;
@@ -666,14 +664,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		// }
 		// }
 		// }
-		// as package might be set we can set the new enclosure
+		// as package might be set we can set the NodeFacade.enclosure
 		if (n.getPackageDeclaration() != null) {
 			ctx.setEnclosure(n.getPackageDeclaration().getName());
 		} else {
-			ctx.setEnclosure(new NameExpr());
+			ctx.setEnclosure(com.digiarea.jse.NodeFacade.NameExpr());
 		}
 		ctx.setCompilationUnit(n);
-		CompilationUnit img = new CompilationUnit();
+		CompilationUnit img = NodeFacade.CompilationUnit();
 		if (n.getTypes() != null) {
 			List<Statement> types = new ArrayList<Statement>();
 			requires = new LinkedHashSet<String>();
@@ -692,7 +690,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					types.add(statement);
 				}
 			}
-			img.setElements(types);
+			img.setElements(NodeFacade.NodeList(types));
 		}
 		img.setName(n.getName());
 		return img;
@@ -700,14 +698,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	private ExpressionStatement createClosureRequire(String n, Context ctx)
 			throws Exception {
-		CallExpression provideExpression = new CallExpression();
-		IdentifierName name = new IdentifierName(GOOG_REQUIRE);
+		CallExpression provideExpression = NodeFacade.CallExpression();
+		IdentifierName name = NodeFacade.IdentifierName(GOOG_REQUIRE);
 		provideExpression.setScope(name);
 		List<Expression> args = new ArrayList<Expression>();
-		args.add(new StringLiteralDouble(NodeUtils.toClassOrInterfaceType(n)
-				.accept(this, ctx).toString()));
-		provideExpression.setArgs(args);
-		return new ExpressionStatement(provideExpression);
+		args.add(NodeFacade.StringLiteralDouble(com.digiarea.jse.NodeFacade
+				.ClassOrInterfaceType(n).accept(this, ctx).toString()));
+		provideExpression.setArgs(NodeFacade.NodeList(args));
+		return NodeFacade.ExpressionStatement(provideExpression);
 	}
 
 	private ExpressionStatement createClosureInherit(ClassDeclaration clazz,
@@ -716,35 +714,36 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			String extendsString = clazz.getExtendsType().accept(this, ctx)
 					.toString();
 			addRequire(extendsString);
-			CallExpression provideExpression = new CallExpression();
-			IdentifierName name = new IdentifierName(GOOG_INHERITS);
+			CallExpression provideExpression = NodeFacade.CallExpression();
+			IdentifierName name = NodeFacade.IdentifierName(GOOG_INHERITS);
 			provideExpression.setScope(name);
 			List<Expression> args = new ArrayList<Expression>();
 			args.add((Expression) ctx.getEnclosure().accept(this, ctx));
-			args.add((Expression) new NameExpr(extendsString).accept(this, ctx));
-			provideExpression.setArgs(args);
-			return new ExpressionStatement(provideExpression);
+			args.add((Expression) com.digiarea.jse.NodeFacade.NameExpr(
+					extendsString).accept(this, ctx));
+			provideExpression.setArgs(NodeFacade.NodeList(args));
+			return NodeFacade.ExpressionStatement(provideExpression);
 		}
 		return null;
 	}
 
 	private ExpressionStatement createClosureProvide(
 			com.digiarea.jse.CompilationUnit n, Context ctx) throws Exception {
-		CallExpression provideExpression = new CallExpression();
-		IdentifierName name = new IdentifierName(GOOG_PROVIDE);
+		CallExpression provideExpression = NodeFacade.CallExpression();
+		IdentifierName name = NodeFacade.IdentifierName(GOOG_PROVIDE);
 		provideExpression.setScope(name);
 		List<Expression> args = new ArrayList<Expression>();
 		provide = n.getName();
-		args.add(new StringLiteralDouble(NodeUtils
-				.toClassOrInterfaceType(provide).accept(this, ctx).toString()));
-		provideExpression.setArgs(args);
-		return new ExpressionStatement(provideExpression);
+		args.add(NodeFacade.StringLiteralDouble(com.digiarea.jse.NodeFacade
+				.ClassOrInterfaceType(provide).accept(this, ctx).toString()));
+		provideExpression.setArgs(NodeFacade.NodeList(args));
+		return NodeFacade.ExpressionStatement(provideExpression);
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.ConditionalExpr n, Context ctx)
 			throws Exception {
-		ConditionalExpression img = new ConditionalExpression();
+		ConditionalExpression img = NodeFacade.ConditionalExpression();
 		if (n.getCondition() != null) {
 			img.setCondition((Expression) n.getCondition().accept(this, ctx));
 		}
@@ -764,7 +763,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			throws Exception {
 		com.digiarea.jse.Node oldParent = ctx.getParent();
 		ctx.setParent(n);
-		FunctionExpression img = new FunctionExpression();
+		FunctionExpression img = NodeFacade.FunctionExpression();
 		// img.setName(getFullName(ctx));
 		if (n.getParameters() != null) {
 			List<Parameter> parameters = new ArrayList<Parameter>();
@@ -773,19 +772,20 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					parameters.add((Parameter) item.accept(this, ctx));
 				}
 			}
-			img.setParameters(parameters);
+			img.setParameters(NodeFacade.NodeList(parameters));
 		}
 		if (procesBodies && n.getBlock() != null) {
 			img.setBody((Block) n.getBlock().accept(this, ctx));
 		} else {
-			img.setBody(new Block());
+			img.setBody(NodeFacade.Block());
 		}
 		Statement statement = null;
 		statement = makeConstructor(getFullName(ctx), img);
 		if (n.getJavaDoc() != null) {
 			statement.setComment((Comment) n.getJavaDoc().accept(this, ctx));
 		} else {
-			statement.setComment((Comment) visit(new JavadocComment(), ctx));
+			statement.setComment((Comment) visit(
+					com.digiarea.jse.NodeFacade.JavadocComment(), ctx));
 		}
 		ctx.setParent(oldParent);
 		return statement;
@@ -794,14 +794,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ContinueStmt n, Context ctx)
 			throws Exception {
-		ContinueStatement img = new ContinueStatement();
+		ContinueStatement img = NodeFacade.ContinueStatement();
 		img.setIdentifier(n.getId());
 		return img;
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.DoStmt n, Context ctx) throws Exception {
-		DoWhileStatement img = new DoWhileStatement();
+		DoWhileStatement img = NodeFacade.DoWhileStatement();
 		if (n.getBody() != null) {
 			img.setBody((Statement) n.getBody().accept(this, ctx));
 		}
@@ -819,13 +819,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (ch == 'f' || ch == 'F' || ch == 'd' || ch == 'D') {
 			expr = expr.substring(0, expr.length() - 1);
 		}
-		return new DecimalLiteral(expr);
+		return NodeFacade.DecimalLiteral(expr);
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.EmptyMemberDeclaration n, Context ctx)
 			throws Exception {
-		EmptyStatement img = new EmptyStatement();
+		EmptyStatement img = NodeFacade.EmptyStatement();
 		if (n.getJavaDoc() != null) {
 			img.setComment((Comment) n.getJavaDoc().accept(this, ctx));
 		}
@@ -835,7 +835,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.EmptyStmt n, Context ctx)
 			throws Exception {
-		return new EmptyStatement();
+		return NodeFacade.EmptyStatement();
 	}
 
 	@Override
@@ -847,7 +847,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.EnclosedExpr n, Context ctx)
 			throws Exception {
-		EnclosedExpression img = new EnclosedExpression();
+		EnclosedExpression img = NodeFacade.EnclosedExpression();
 		if (n.getInner() != null) {
 			img.setInner((Expression) n.getInner().accept(this, ctx));
 		}
@@ -857,7 +857,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.EnumConstantDeclaration n, Context ctx)
 			throws Exception {
-		FunctionExpression img = new FunctionExpression();
+		FunctionExpression img = NodeFacade.FunctionExpression();
 		img.setName(n.getName());
 		List<Expression> args = new ArrayList<Expression>();
 		if (n.getArgs() != null) {
@@ -874,11 +874,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					classBody.add((Statement) item.accept(this, ctx));
 				}
 			}
-			img.setBody(new Block(classBody));
+			img.setBody(NodeFacade.Block(classBody));
 		}
 		Statement statement = makeStatic(getFullName(ctx), n.getName(),
-				new CallExpression(new EnclosedExpression(
-						new AllocationExpression(img)), args));
+				NodeFacade.CallExpression(NodeFacade
+						.EnclosedExpression(NodeFacade
+								.AllocationExpression(img)), args));
 		if (n.getJavaDoc() != null) {
 			statement.setComment((Comment) n.getJavaDoc().accept(this, ctx));
 		}
@@ -893,7 +894,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (n.getMembers() != null) {
 			members.addAll(n.getMembers());
 		}
-		n.setMembers(members);
+		n.setMembers(com.digiarea.jse.NodeFacade.NodeList(members));
 		return makeTypeDeclaration(n, ctx);
 	}
 
@@ -911,21 +912,24 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				ClassDeclaration clazz = (ClassDeclaration) ctx
 						.getTypeDeclaration();
 				if (clazz.getExtendsType() != null) {
-					CallExpression provideExpression = new CallExpression();
-					IdentifierName name = new IdentifierName(
-							removeGenericTypes(clazz.getExtendsType())
-									.toString() + ".call");
+					CallExpression provideExpression = NodeFacade
+							.CallExpression();
+					IdentifierName name = NodeFacade
+							.IdentifierName(removeGenericTypes(
+									clazz.getExtendsType()).toString()
+									+ ".call");
 					provideExpression.setScope(name);
 					List<Expression> args = new ArrayList<Expression>();
-					args.add((Expression) new ThisExpr().accept(this, ctx));
+					args.add((Expression) com.digiarea.jse.NodeFacade
+							.ThisExpr().accept(this, ctx));
 					if (n.getArgs() != null) {
 						for (com.digiarea.jse.Expression expression : n
 								.getArgs()) {
 							args.add((Expression) expression.accept(this, ctx));
 						}
 					}
-					provideExpression.setArgs(args);
-					return new ExpressionStatement(provideExpression);
+					provideExpression.setArgs(NodeFacade.NodeList(args));
+					return NodeFacade.ExpressionStatement(provideExpression);
 				}
 			}
 		}
@@ -935,7 +939,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ExpressionStmt n, Context ctx)
 			throws Exception {
-		ExpressionStatement img = new ExpressionStatement();
+		ExpressionStatement img = NodeFacade.ExpressionStatement();
 		if (n.getExpression() != null) {
 			img.setExpression((Expression) n.getExpression().accept(this, ctx));
 		}
@@ -947,11 +951,11 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			throws Exception {
 		com.digiarea.jse.Node parent = ctx.getParent();
 		ctx.setParent(n);
-		FieldAccessExpression img = new FieldAccessExpression();
+		FieldAccessExpression img = NodeFacade.FieldAccessExpression();
 		if (n.getScope() != null) {
 			img.setScope((Expression) n.getScope().accept(this, ctx));
 		}
-		img.setField(new IdentifierName(n.getField()));
+		img.setField(NodeFacade.IdentifierName(n.getField()));
 		ctx.setParent(parent);
 		return img;
 	}
@@ -973,12 +977,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (variables.size() == 1) {
 			statement = variables.get(0);
 		} else {
-			statement = new Block(variables);
+			statement = NodeFacade.Block(variables);
 		}
 		if (n.getJavaDoc() != null) {
 			statement.setComment((Comment) n.getJavaDoc().accept(this, ctx));
 		} else {
-			statement.setComment((Comment) visit(new JavadocComment(), ctx));
+			statement.setComment((Comment) visit(
+					com.digiarea.jse.NodeFacade.JavadocComment(), ctx));
 		}
 		ctx.setParent(oldParent);
 		return statement;
@@ -987,7 +992,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ForeachStmt n, Context ctx)
 			throws Exception {
-		ForeachStatement img = new ForeachStatement();
+		ForeachStatement img = NodeFacade.ForeachStatement();
 		if (n.getVariable() != null) {
 			img.setVariable((Expression) n.getVariable().accept(this, ctx));
 		}
@@ -1002,7 +1007,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	@Override
 	public Node visit(com.digiarea.jse.ForStmt n, Context ctx) throws Exception {
-		ForStatement img = new ForStatement();
+		ForStatement img = NodeFacade.ForStatement();
 		if (n.getInit() != null) {
 			List<Expression> init = new ArrayList<Expression>();
 			for (com.digiarea.jse.Expression item : n.getInit()) {
@@ -1010,7 +1015,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					init.add((Expression) item.accept(this, ctx));
 				}
 			}
-			img.setVariable(new SequenceExpression(init));
+			img.setVariable(NodeFacade.SequenceExpression(init));
 		}
 		if (n.getCompare() != null) {
 			img.setCondition((Expression) n.getCompare().accept(this, ctx));
@@ -1022,7 +1027,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					update.add((Expression) item.accept(this, ctx));
 				}
 			}
-			img.setExpr(new SequenceExpression(update));
+			img.setExpr(NodeFacade.SequenceExpression(update));
 		}
 		if (n.getBody() != null) {
 			img.setBody((Statement) n.getBody().accept(this, ctx));
@@ -1032,7 +1037,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	@Override
 	public Node visit(com.digiarea.jse.IfStmt n, Context ctx) throws Exception {
-		IfStatement img = new IfStatement();
+		IfStatement img = NodeFacade.IfStatement();
 		if (n.getCondition() != null) {
 			img.setCondition((Expression) n.getCondition().accept(this, ctx));
 		}
@@ -1058,7 +1063,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (n.getBlock() != null) {
 			return n.getBlock().accept(this, ctx);
 		} else {
-			return new Block();
+			return NodeFacade.Block();
 		}
 	}
 
@@ -1068,20 +1073,20 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		Expression img = null;
 
 		if (types.contains(n.getType().toString())) {
-			CallExpression func = new CallExpression();
+			CallExpression func = NodeFacade.CallExpression();
 			if (n.getType().toString().equals(JAVA_LANG_STRING)) {
-				func.setScope((Expression) new NameExpr(GOOG_ISSTRING).accept(
-						this, ctx));
+				func.setScope((Expression) com.digiarea.jse.NodeFacade
+						.NameExpr(GOOG_ISSTRING).accept(this, ctx));
 			} else if (n.getType().toString().equals(JAVA_LANG_INTEGER)) {
-				func.setScope((Expression) new NameExpr(GOOG_ISNUMBER).accept(
-						this, ctx));
+				func.setScope((Expression) com.digiarea.jse.NodeFacade
+						.NameExpr(GOOG_ISNUMBER).accept(this, ctx));
 			}
 			List<Expression> parameters = new ArrayList<Expression>();
 			parameters.add((Expression) n.getExpression().accept(this, ctx));
-			func.setArgs(parameters);
+			func.setArgs(NodeFacade.NodeList(parameters));
 			img = func;
 		} else {
-			BinaryExpression bin = new BinaryExpression();
+			BinaryExpression bin = NodeFacade.BinaryExpression();
 			bin.setBinaryOperator(BinaryOperator.opInstanceof);
 			if (n.getExpression() != null) {
 				bin.setLeft((Expression) n.getExpression().accept(this, ctx));
@@ -1100,7 +1105,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.IntegerLiteralExpr n, Context ctx)
 			throws Exception {
-		return new DecimalLiteral(n.getValue());
+		return NodeFacade.DecimalLiteral(n.getValue());
 	}
 
 	@Override
@@ -1112,7 +1117,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.JavadocComment n, Context ctx)
 			throws Exception {
-		JSDocComment img = new JSDocComment();
+		JSDocComment img = NodeFacade.JSDocComment();
 		String content = EMPTY;
 		if (n != null && n.getContent() != null && !n.getContent().isEmpty()) {
 			content = n.getContent().replaceAll("\t", SourcePrinter.INDENT)
@@ -1188,11 +1193,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 						}
 					}
 					content = content
-							+ getJSDocModifiers(typeDeclaration.getModifiers());
+							+ getJSDocModifiers(typeDeclaration.getModifiers()
+									.getModifiers());
 				}
 			} else if (parent instanceof MethodDeclaration) {
 				MethodDeclaration method = (MethodDeclaration) parent;
-				content = content + getJSDocModifiers(method.getModifiers());
+				content = content
+						+ getJSDocModifiers(method.getModifiers()
+								.getModifiers());
 				List<com.digiarea.jse.Parameter> parameters = method
 						.getParameters();
 				if (parameters != null) {
@@ -1206,7 +1214,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 						+ getJSDocType(field.getType(), ctx) + "} ";
 			} else if (parent instanceof AnnotationMemberDeclaration) {
 				AnnotationMemberDeclaration method = (AnnotationMemberDeclaration) parent;
-				content = content + getJSDocModifiers(method.getModifiers());
+				content = content
+						+ getJSDocModifiers(method.getModifiers()
+								.getModifiers());
 				Type type = method.getType();
 				content = jsDocReturn(type, content, ctx);
 				com.digiarea.jse.Expression defaultValue = method
@@ -1281,12 +1291,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				}
 			} else if (type instanceof ReferenceType) {
 				ReferenceType rType = (ReferenceType) type;
-				int arrayCount = rType.getArrayCount();
+				NodeList<ArraySlot> slots = rType.getSlots();
+				int arrayCount = slots != null ? slots.size() : 0;
 				if (arrayCount == 0) {
 					return getJSDocType(rType.getType(), ctx);
 				} else {
-					ReferenceType newType = new ReferenceType(rType.getType(),
-							arrayCount - 1);
+					ReferenceType newType = com.digiarea.jse.NodeFacade
+							.ReferenceType(rType.getType(), arrayCount - 1);
 					return "Array.<" + getJSDocType(newType, ctx) + ">";
 				}
 			} else if (type.toString().equals(JAVA_LANG_OBJECT)) {
@@ -1311,9 +1322,8 @@ public class Visitor implements GenericVisitor<Node, Context> {
 						rowType.append(getJSDocType(scope, ctx));
 						rowType.append(".");
 					}
-					rowType.append(getJSDocType(
-							NodeUtils.toClassOrInterfaceType(clazz.getName()),
-							ctx));
+					rowType.append(getJSDocType(com.digiarea.jse.NodeFacade
+							.ClassOrInterfaceType(clazz.getName()), ctx));
 					if (args != null && args.size() > 0) {
 						rowType.append(".<");
 						for (Type arg : args) {
@@ -1342,9 +1352,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	private String getJSDocModifiers(int modifier) {
 		String content = EMPTY;
-		if (ModifierSet.isPrivate(modifier)) {
+		if (Modifiers.isPrivate(modifier)) {
 			content = content + "\n * @private";
-		} else if (ModifierSet.isProtected(modifier)) {
+		} else if (Modifiers.isProtected(modifier)) {
 			content = content + "\n * @protected";
 		}
 		return content;
@@ -1353,7 +1363,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.LabeledStmt n, Context ctx)
 			throws Exception {
-		LabelledStatement img = new LabelledStatement();
+		LabelledStatement img = NodeFacade.LabelledStatement();
 		img.setLabel(n.getLabel());
 		if (n.getStmt() != null) {
 			img.setStatement((Statement) n.getStmt().accept(this, ctx));
@@ -1364,7 +1374,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.LineComment n, Context ctx)
 			throws Exception {
-		LineComment img = new LineComment();
+		LineComment img = NodeFacade.LineComment();
 		img.setContent("//" + n.getContent());
 		return img;
 	}
@@ -1373,7 +1383,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	public Node visit(com.digiarea.jse.LongLiteralExpr n, Context ctx)
 			throws Exception {
 		String expr = n.getValue().substring(0, n.getValue().length() - 1);
-		return new HexIntegerLiteral(expr);
+		return NodeFacade.HexIntegerLiteral(expr);
 	}
 
 	@Override
@@ -1391,15 +1401,15 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.MethodCallExpr n, Context ctx)
 			throws Exception {
-		CallExpression img = new CallExpression();
+		CallExpression img = NodeFacade.CallExpression();
 		Expression scope = null;
-		IdentifierName name = new IdentifierName(n.getName());
+		IdentifierName name = NodeFacade.IdentifierName(n.getName());
 		if (n.getScope() != null) {
 			if (n.getScope() instanceof SuperExpr) {
-				scope = new IdentifierName(GOOG_BASE);
+				scope = NodeFacade.IdentifierName(GOOG_BASE);
 			} else {
 				scope = (Expression) n.getScope().accept(this, ctx);
-				scope = new FieldAccessExpression(scope, name);
+				scope = NodeFacade.FieldAccessExpression(scope, name);
 			}
 		} else {
 			scope = name;
@@ -1408,16 +1418,16 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (n.getArgs() != null) {
 			List<Expression> args = new ArrayList<Expression>();
 			if (n.getScope() instanceof SuperExpr) {
-				args.add(new ThisExpression());
-				args.add((Expression) new StringLiteralExpr(n.getName())
-						.accept(this, ctx));
+				args.add(NodeFacade.ThisExpression());
+				args.add((Expression) com.digiarea.jse.NodeFacade
+						.StringLiteralExpr(n.getName()).accept(this, ctx));
 			}
 			for (com.digiarea.jse.Expression item : n.getArgs()) {
 				if (item != null) {
 					args.add((Expression) item.accept(this, ctx));
 				}
 			}
-			img.setArgs(args);
+			img.setArgs(NodeFacade.NodeList(args));
 		}
 		return img;
 	}
@@ -1425,7 +1435,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.MethodDeclaration n, Context ctx)
 			throws Exception {
-		FunctionExpression img = new FunctionExpression();
+		FunctionExpression img = NodeFacade.FunctionExpression();
 		if (n.getParameters() != null) {
 			List<Parameter> parameters = new ArrayList<Parameter>();
 			for (com.digiarea.jse.Parameter item : n.getParameters()) {
@@ -1433,17 +1443,17 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					parameters.add((Parameter) item.accept(this, ctx));
 				}
 			}
-			img.setParameters(parameters);
+			img.setParameters(NodeFacade.NodeList(parameters));
 		}
-		if (procesBodies && n.getBody() != null) {
-			img.setBody((Block) n.getBody().accept(this, ctx));
+		if (procesBodies && n.getBlock() != null) {
+			img.setBody((Block) n.getBlock().accept(this, ctx));
 		} else {
-			img.setBody(new Block());
+			img.setBody(NodeFacade.Block());
 		}
 		Statement statement = null;
 		if (ctx.isAnonymousClass()) {
 			statement = makeSimple(n.getName(), img);
-		} else if (ModifierSet.isStatic(n.getModifiers())) {
+		} else if (n.getModifiers().isStatic()) {
 			statement = makeStatic(getFullName(ctx), n.getName(), img);
 		} else {
 			statement = makePrototype(getFullName(ctx), n.getName(), img);
@@ -1453,7 +1463,8 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		if (n.getJavaDoc() != null) {
 			statement.setComment((Comment) n.getJavaDoc().accept(this, ctx));
 		} else {
-			statement.setComment((Comment) visit(new JavadocComment(), ctx));
+			statement.setComment((Comment) visit(
+					com.digiarea.jse.NodeFacade.JavadocComment(), ctx));
 		}
 		ctx.setParent(oldParent);
 		return statement;
@@ -1467,7 +1478,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	}
 
 	@Override
-	public Node visit(com.digiarea.jse.ModifierSet n, Context ctx)
+	public Node visit(com.digiarea.jse.Modifiers n, Context ctx)
 			throws Exception {
 		return null;
 	}
@@ -1475,7 +1486,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.NameExpr n, Context ctx)
 			throws Exception {
-		IdentifierName img = new IdentifierName();
+		IdentifierName img = NodeFacade.IdentifierName();
 		String name = n.getName();
 		com.digiarea.jse.Node parent = ctx.getParent();
 		if (parent instanceof QualifiedNameExpr) {
@@ -1508,7 +1519,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.NullLiteralExpr n, Context ctx)
 			throws Exception {
-		return new NullLiteral();
+		return NodeFacade.NullLiteral();
 	}
 
 	private boolean canAddRequire(ClassOrInterfaceType type, Context ctx) {
@@ -1533,13 +1544,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		}
 		Expression scope = null;
 		if (parent != null && (parent instanceof ThrowStmt)) {
-			scope = new IdentifierName(ERROR);
+			scope = NodeFacade.IdentifierName(ERROR);
 		} else {
-			IdentifierName name = new IdentifierName(removeGenericTypes(
+			IdentifierName name = NodeFacade.IdentifierName(removeGenericTypes(
 					n.getType()).accept(this, ctx).toString());
 			if (n.getScope() != null) {
-				scope = new FieldAccessExpression((Expression) n.getScope()
-						.accept(this, ctx), name);
+				scope = NodeFacade.FieldAccessExpression((Expression) n
+						.getScope().accept(this, ctx), name);
 			} else {
 				scope = name;
 			}
@@ -1552,13 +1563,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				}
 			}
 		}
-		CallExpression img = new CallExpression(scope, args);
+		CallExpression img = NodeFacade.CallExpression(scope, args);
 		ObjectLiteral initializer = null;
 		if (n.getAnonymousClassBody() != null) {
 			boolean anonymousClass = ctx.isAnonymousClass();
 			ctx.setAnonymousClass(true);
 			List<PropertyAssignment> properties = new ArrayList<>();
-			initializer = new ObjectLiteral(properties);
+			initializer = NodeFacade.ObjectLiteral(properties);
 			for (BodyDeclaration item : n.getAnonymousClassBody()) {
 				if (item != null) {
 					Statement result = (Statement) item.accept(this, ctx);
@@ -1573,7 +1584,8 @@ public class Visitor implements GenericVisitor<Node, Context> {
 						 */
 
 					} else if (result instanceof Block) {
-						List<Statement> stmts = ((Block) result).getStmts();
+						List<Statement> stmts = ((Block) result)
+								.getStatements();
 						for (Statement statement : stmts) {
 							PutAssignment stmt = makePutAssignment(statement,
 									ctx);
@@ -1591,7 +1603,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			}
 			ctx.setAnonymousClass(anonymousClass);
 		}
-		return new NewExpression(img, initializer);
+		return NodeFacade.NewExpression(img, initializer);
 	}
 
 	private PutAssignment makePutAssignment(Statement statement, Context ctx)
@@ -1601,8 +1613,8 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					.getExpression();
 			if (expression instanceof AssignmentExpression) {
 				AssignmentExpression expr = (AssignmentExpression) expression;
-				return new PutAssignment((IdentifierName) expr.getTarget(),
-						expr.getValue());
+				return NodeFacade.PutAssignment(
+						(IdentifierName) expr.getTarget(), expr.getValue());
 			}
 		} else {
 			System.err.println("ERR: " + ctx.getCompilationUnit().getName());
@@ -1630,7 +1642,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.Parameter n, Context ctx)
 			throws Exception {
-		Parameter img = new Parameter();
+		Parameter img = NodeFacade.Parameter();
 		if (n.getId() != null) {
 			img.setName(n.getId().getName());
 		}
@@ -1641,9 +1653,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	public Node visit(com.digiarea.jse.PrimitiveType n, Context ctx)
 			throws Exception {
 		if (n.getType() == com.digiarea.jse.PrimitiveType.Primitive.Boolean) {
-			return new IdentifierName("boolean");
+			return NodeFacade.IdentifierName("boolean");
 		} else {
-			return new IdentifierName(NUMBER);
+			return NodeFacade.IdentifierName(NUMBER);
 		}
 	}
 
@@ -1655,7 +1667,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	@Override
 	public Node visit(com.digiarea.jse.Project n, Context ctx) throws Exception {
-		Project img = new Project();
+		Project img = NodeFacade.Project();
 		if (n.getCompilationUnits() != null) {
 			List<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
 			for (com.digiarea.jse.CompilationUnit item : n
@@ -1665,7 +1677,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 							ctx));
 				}
 			}
-			img.setCompilationUnits(compilationUnits);
+			img.setCompilationUnits(NodeFacade.NodeList(compilationUnits));
 		}
 		return img;
 	}
@@ -1682,11 +1694,11 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				addRequire(qualifier.toString() + "." + n.getName());
 			}
 		}
-		FieldAccessExpression img = new FieldAccessExpression();
+		FieldAccessExpression img = NodeFacade.FieldAccessExpression();
 		if (qualifier != null) {
 			img.setScope((Expression) qualifier.accept(this, ctx));
 		}
-		img.setField(new IdentifierName(n.getName()));
+		img.setField(NodeFacade.IdentifierName(n.getName()));
 		ctx.setParent(parent);
 		return img;
 	}
@@ -1703,7 +1715,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ReturnStmt n, Context ctx)
 			throws Exception {
-		ReturnStatement img = new ReturnStatement();
+		ReturnStatement img = NodeFacade.ReturnStatement();
 		if (n.getExpression() != null) {
 			img.setExpression((Expression) n.getExpression().accept(this, ctx));
 		}
@@ -1719,19 +1731,19 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.StringLiteralExpr n, Context ctx)
 			throws Exception {
-		return new StringLiteralDouble(n.getValue());
+		return NodeFacade.StringLiteralDouble(n.getValue());
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.SuperExpr n, Context ctx)
 			throws Exception {
-		return new ThisExpression();
+		return NodeFacade.ThisExpression();
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.SwitchEntryStmt n, Context ctx)
 			throws Exception {
-		CaseClause img = new CaseClause();
+		CaseClause img = NodeFacade.CaseClause();
 		if (n.getLabel() != null) {
 			img.setExpression((Expression) n.getLabel().accept(this, ctx));
 		}
@@ -1742,7 +1754,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					stmts.add((Statement) item.accept(this, ctx));
 				}
 			}
-			img.setStatements(stmts);
+			img.setStatements(NodeFacade.NodeList(stmts));
 		}
 		return img;
 	}
@@ -1750,7 +1762,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.SwitchStmt n, Context ctx)
 			throws Exception {
-		SwitchStatement img = new SwitchStatement();
+		SwitchStatement img = NodeFacade.SwitchStatement();
 		if (n.getSelector() != null) {
 			img.setExpression((Expression) n.getSelector().accept(this, ctx));
 		}
@@ -1772,8 +1784,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					es5Statements.add((Statement) statement.accept(this, ctx));
 				}
 			}
-			img.setBlock(new CaseBlock(new DefaultClause(es5Statements),
-					entries));
+			img.setBlock(NodeFacade.CaseBlock(
+					NodeFacade.DefaultClause(es5Statements),
+					NodeFacade.NodeList(entries), null, 0, 0));
 		}
 		return img;
 	}
@@ -1781,7 +1794,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.SynchronizedStmt n, Context ctx)
 			throws Exception {
-		WithStatement img = new WithStatement();
+		WithStatement img = NodeFacade.WithStatement();
 		if (n.getExpression() != null) {
 			img.setExpression((Expression) n.getExpression().accept(this, ctx));
 		}
@@ -1794,7 +1807,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ThisExpr n, Context ctx)
 			throws Exception {
-		ThisExpression img = new ThisExpression();
+		ThisExpression img = NodeFacade.ThisExpression();
 		// TODO check this out (Expression) n.getClassExpr().accept(this, ctx);
 		return img;
 	}
@@ -1804,7 +1817,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 			throws Exception {
 		com.digiarea.jse.Node oldParent = ctx.getParent();
 		ctx.setParent(n);
-		ThrowStatement img = new ThrowStatement();
+		ThrowStatement img = NodeFacade.ThrowStatement();
 		if (n.getExpression() != null) {
 			Expression expr = (Expression) n.getExpression().accept(this, ctx);
 			img.setExpression(expr);
@@ -1815,7 +1828,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	@Override
 	public Node visit(com.digiarea.jse.TryStmt n, Context ctx) throws Exception {
-		TryStatement img = new TryStatement();
+		TryStatement img = NodeFacade.TryStatement();
 		if (n.getTryBlock() != null) {
 			img.setTryBlock((Block) n.getTryBlock().accept(this, ctx));
 		}
@@ -1860,7 +1873,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.UnaryExpr.UnaryOperator n, Context ctx)
 			throws Exception {
-		UnaryExpression img = new UnaryExpression();
+		UnaryExpression img = NodeFacade.UnaryExpression();
 		UnaryOperator operator = null;
 		switch (n) {
 		case inverse:
@@ -1895,7 +1908,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.VariableDeclarationExpr n, Context ctx)
 			throws Exception {
-		VariableExpression img = new VariableExpression();
+		VariableExpression img = NodeFacade.VariableExpression();
 		if (n.getVars() != null) {
 			List<VariableDeclaration> vars = new ArrayList<VariableDeclaration>();
 			com.digiarea.jse.Node oldParent = ctx.getParent();
@@ -1905,7 +1918,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 					vars.add((VariableDeclaration) item.accept(this, ctx));
 				}
 			}
-			img.setVariableDeclarations(vars);
+			img.setVariableDeclarations(NodeFacade.NodeList(vars));
 			ctx.setParent(oldParent);
 		}
 		return img;
@@ -1929,13 +1942,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	public Node visit(com.digiarea.jse.VoidType n, Context ctx)
 			throws Exception {
 		// FIXME
-		return new IdentifierName(n.toString());
+		return NodeFacade.IdentifierName(n.toString());
 	}
 
 	@Override
 	public Node visit(com.digiarea.jse.WhileStmt n, Context ctx)
 			throws Exception {
-		WhileStatement img = new WhileStatement();
+		WhileStatement img = NodeFacade.WhileStatement();
 		if (n.getCondition() != null) {
 			img.setCondition((Expression) n.getCondition().accept(this, ctx));
 		}
@@ -1949,7 +1962,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	public Node visit(com.digiarea.jse.WildcardType n, Context ctx)
 			throws Exception {
 		// FIXME
-		return new IdentifierName(n.toString());
+		return NodeFacade.IdentifierName(n.toString());
 	}
 
 	@Override
@@ -1990,12 +2003,6 @@ public class Visitor implements GenericVisitor<Node, Context> {
 
 	@Override
 	public Node visit(MethodRef n, Context ctx) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Node visit(Modifiers n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
