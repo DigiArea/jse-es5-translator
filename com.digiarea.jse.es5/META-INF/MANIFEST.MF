@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Es5
+Bundle-SymbolicName: com.digiarea.jse.es5
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: DIGIAREA
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: com.digiarea.jse;bundle-version="1.0.0",
+ com.digiarea.es5;bundle-version="1.0.0",
+ com.digiarea.common;bundle-version="1.0.0"
