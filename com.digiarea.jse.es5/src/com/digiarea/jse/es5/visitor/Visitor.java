@@ -65,8 +65,10 @@ import com.digiarea.jse.BodyDeclaration;
 import com.digiarea.jse.ClassDeclaration;
 import com.digiarea.jse.ClassOrInterfaceType;
 import com.digiarea.jse.ConstructorDeclaration;
+import com.digiarea.jse.CreationReference;
 import com.digiarea.jse.Ellipsis;
 import com.digiarea.jse.EnumDeclaration;
+import com.digiarea.jse.ExpressionMethodReference;
 import com.digiarea.jse.FieldDeclaration;
 import com.digiarea.jse.InitializerDeclaration;
 import com.digiarea.jse.InstanceOfExpr;
@@ -74,9 +76,6 @@ import com.digiarea.jse.InterfaceDeclaration;
 import com.digiarea.jse.LambdaBlock;
 import com.digiarea.jse.LambdaExpr;
 import com.digiarea.jse.MethodDeclaration;
-import com.digiarea.jse.MethodExprRef;
-import com.digiarea.jse.MethodRef;
-import com.digiarea.jse.MethodTypeRef;
 import com.digiarea.jse.Modifiers;
 import com.digiarea.jse.NameExpr;
 import com.digiarea.jse.NodeList;
@@ -85,16 +84,18 @@ import com.digiarea.jse.PrimitiveType.Primitive;
 import com.digiarea.jse.QualifiedNameExpr;
 import com.digiarea.jse.ReferenceType;
 import com.digiarea.jse.SuperExpr;
+import com.digiarea.jse.SuperMethodReference;
 import com.digiarea.jse.SwitchEntryStmt;
 import com.digiarea.jse.ThrowStmt;
 import com.digiarea.jse.Type;
 import com.digiarea.jse.TypeDeclaration;
+import com.digiarea.jse.TypeMethodReference;
 import com.digiarea.jse.VariableDeclarator;
 import com.digiarea.jse.VariableDeclaratorId;
 import com.digiarea.jse.VoidType;
 import com.digiarea.jse.WildcardType;
-import com.digiarea.jse.builder.ModelHierarchy;
 import com.digiarea.jse.builder.ModelBuilder.BuilderType;
+import com.digiarea.jse.builder.ModelHierarchy;
 import com.digiarea.jse.es5.Context;
 import com.digiarea.jse.utils.NodeUtils;
 import com.digiarea.jse.visitor.GenericVisitor;
@@ -766,6 +767,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.ConstructorDeclaration n, Context ctx)
 			throws Exception {
+		// FIXME method reference!
 		com.digiarea.jse.Node oldParent = ctx.getParent();
 		ctx.setParent(n);
 		FunctionExpression img = NodeFacade.FunctionExpression();
@@ -1440,6 +1442,7 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.MethodDeclaration n, Context ctx)
 			throws Exception {
+		// FIXME method reference!
 		FunctionExpression img = NodeFacade.FunctionExpression();
 		if (n.getParameters() != null) {
 			List<Parameter> parameters = new ArrayList<Parameter>();
@@ -1995,19 +1998,26 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	}
 
 	@Override
-	public Node visit(MethodExprRef n, Context ctx) throws Exception {
+	public Node visit(CreationReference n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Node visit(MethodTypeRef n, Context ctx) throws Exception {
+	public Node visit(ExpressionMethodReference n, Context ctx)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Node visit(MethodRef n, Context ctx) throws Exception {
+	public Node visit(SuperMethodReference n, Context ctx) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node visit(TypeMethodReference n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
