@@ -18,7 +18,6 @@ import com.digiarea.jse.BodyDeclaration;
 import com.digiarea.jse.ClassDeclaration;
 import com.digiarea.jse.ClassOrInterfaceType;
 import com.digiarea.jse.ConstructorDeclaration;
-import com.digiarea.jse.Ellipsis;
 import com.digiarea.jse.EnumDeclaration;
 import com.digiarea.jse.Expression;
 import com.digiarea.jse.IfStmt;
@@ -132,7 +131,8 @@ public class Overloader implements Arrow<Project, Project> {
 			IfStmt topIfStmt = null;
 			IfStmt tmpIfStmt = null;
 			for (ConstructorDeclaration item : value) {
-				modifiers = makeModifiers(modifiers, item.getModifiers().getModifiers());
+				modifiers = makeModifiers(modifiers, item.getModifiers()
+						.getModifiers());
 				typeParameters = makeTypeParameters(typeParameters,
 						item.getTypeParameters());
 				BlockStmt stuff = item.getBlock();
@@ -155,7 +155,7 @@ public class Overloader implements Arrow<Project, Project> {
 				body = NodeFacade.BlockStmt(NodeFacade
 						.NodeList((Statement) topIfStmt));
 			}
-			ConstructorDeclaration result = new ConstructorDeclaration();
+			ConstructorDeclaration result = NodeFacade.ConstructorDeclaration();
 			result.setName(key);
 			result.setAnnotations(NodeFacade.NodeList(annotations));
 			result.setJavaDoc(javaDoc);
@@ -181,7 +181,8 @@ public class Overloader implements Arrow<Project, Project> {
 			IfStmt topIfStmt = null;
 			IfStmt tmpIfStmt = null;
 			for (MethodDeclaration item : value) {
-				modifiers = makeModifiers(modifiers, item.getModifiers().getModifiers());
+				modifiers = makeModifiers(modifiers, item.getModifiers()
+						.getModifiers());
 				typeParameters = makeTypeParameters(typeParameters,
 						item.getTypeParameters());
 				type = makeType(type, item.getType());
@@ -214,7 +215,7 @@ public class Overloader implements Arrow<Project, Project> {
 				type = NodeFacade.ClassOrInterfaceType(JAVA_LANG_OBJECT);
 
 			}
-			MethodDeclaration result = new MethodDeclaration();
+			MethodDeclaration result = NodeFacade.MethodDeclaration();
 			result.setName(key);
 			result.setAnnotations(NodeFacade.NodeList(annotations));
 			result.setJavaDoc(javaDoc);
@@ -257,7 +258,7 @@ public class Overloader implements Arrow<Project, Project> {
 
 		private IfStmt makeIf(String paramName, List<Parameter> parameters,
 				BlockStmt body, IfStmt ifStmt) {
-			IfStmt ifStatement = new IfStmt();
+			IfStmt ifStatement = NodeFacade.IfStmt();
 			ifStatement.setCondition(makeCondition(paramName, parameters));
 			List<Statement> statements = makeLocalDeclarations(paramName,
 					parameters);
@@ -351,11 +352,11 @@ public class Overloader implements Arrow<Project, Project> {
 
 		private List<Parameter> makeParameters(String paramName) {
 			List<Parameter> parameters = new ArrayList<Parameter>();
-			Parameter parameter = new Parameter();
+			Parameter parameter = NodeFacade.Parameter();
 			parameter.setId(NodeFacade.VariableDeclaratorId(paramName));
 			parameter
 					.setType(NodeFacade.ClassOrInterfaceType(JAVA_LANG_OBJECT));
-			parameter.setEllipsis(new Ellipsis());
+			parameter.setEllipsis(NodeFacade.Ellipsis());
 			parameters.add(parameter);
 			return parameters;
 		}
