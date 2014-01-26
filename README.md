@@ -3,7 +3,7 @@
 jse-es5-translator
 ==================
 
-The translator from Java language model to JavaScript language model with JSDoc annotations.
+Java to JavaScript translator with JSDoc annotations.
 
 ###License
 
