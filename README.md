@@ -1,4 +1,4 @@
-![Diva](https://lh6.googleusercontent.com/-mPD1NmLIk0A/Ut-dbRV_0BI/AAAAAAAABnE/OXlfuZTfWIo/w718-h364-no/diva.jpg)
+![Diva](https://lh6.googleusercontent.com/-gT2NAWpAmUE/UuTEa1MkGJI/AAAAAAAAAEQ/0iHEf1aIWa4/w718-h364-no/diva.jpg)
 
 jse-es5-translator
 ==================
