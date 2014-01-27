@@ -3,7 +3,7 @@
 jse-es5-translator
 ==================
 
-Java to JavaScript translator with JSDoc annotations.
+Java to JavaScript translator with JSDoc annotations for [Google Closure Compiler](https://developers.google.com/closure/compiler/docs/js-for-compiler).
 
 ###License
 
