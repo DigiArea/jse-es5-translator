@@ -1,6 +1,13 @@
-/*
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2011 - 2014 DigiArea, Inc. and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     DigiArea, Inc. - initial API and implementation
+ *******************************************************************************/
 package com.digiarea.jse.es5.visitor;
 
 import java.util.ArrayList;
@@ -40,21 +47,51 @@ import com.digiarea.jse.VoidType;
 import com.digiarea.jse.utils.LangUtils;
 import com.digiarea.jse.visitor.VoidVisitorAdapter;
 
+/**
+ * The Class Overloader.
+ */
 public class Overloader implements Arrow<Project, Project> {
 
+	/**
+	 * The Class Data.
+	 */
 	private static class Data {
 
+		/**
+		 * The Constant JAVA_LANG_OBJECT.
+		 */
 		private static final String JAVA_LANG_OBJECT = "java.lang.Object";
 
+		/**
+		 * The type declaration.
+		 */
 		private TypeDeclaration typeDeclaration;
+		
+		/**
+		 * The methods.
+		 */
 		private Map<String, Set<MethodDeclaration>> methods = new HashMap<String, Set<MethodDeclaration>>();
+		
+		/**
+		 * The constructors.
+		 */
 		private Map<String, Set<ConstructorDeclaration>> constructors = new HashMap<String, Set<ConstructorDeclaration>>();
 
+		/**
+		 * Instantiates a new data.
+		 *
+		 * @param typeDeclaration the type declaration
+		 */
 		public Data(TypeDeclaration typeDeclaration) {
 			super();
 			this.typeDeclaration = typeDeclaration;
 		}
 
+		/**
+		 * Adds the constructor.
+		 *
+		 * @param constructor the constructor
+		 */
 		public void addConstructor(ConstructorDeclaration constructor) {
 			String name = typeDeclaration.getName();
 			Set<ConstructorDeclaration> sorted = null;
@@ -67,6 +104,11 @@ public class Overloader implements Arrow<Project, Project> {
 			sorted.add(constructor);
 		}
 
+		/**
+		 * Adds the method.
+		 *
+		 * @param method the method
+		 */
 		public void addMethod(MethodDeclaration method) {
 			String name = method.getName();
 			Set<MethodDeclaration> sorted = null;
@@ -79,6 +121,9 @@ public class Overloader implements Arrow<Project, Project> {
 			sorted.add(method);
 		}
 
+		/**
+		 * Process.
+		 */
 		public void process() {
 			// remove constructors and methods
 			List<BodyDeclaration> declarations = new ArrayList<BodyDeclaration>();
@@ -115,8 +160,18 @@ public class Overloader implements Arrow<Project, Project> {
 			typeDeclaration.setMembers(NodeFacade.NodeList(declarations));
 		}
 
+		/**
+		 * The magic arguments.
+		 */
 		private static String MAGIC_ARGUMENTS = "arguments";
 
+		/**
+		 * Make constructor.
+		 *
+		 * @param key the key
+		 * @param value the value
+		 * @return the constructor declaration
+		 */
 		private ConstructorDeclaration makeConstructor(String key,
 				Set<ConstructorDeclaration> value) {
 			// FIXME - fix super(...) and this(...) statements
@@ -167,6 +222,13 @@ public class Overloader implements Arrow<Project, Project> {
 			return result;
 		}
 
+		/**
+		 * Make method.
+		 *
+		 * @param key the key
+		 * @param value the value
+		 * @return the method declaration
+		 */
 		private MethodDeclaration makeMethod(String key,
 				Set<MethodDeclaration> value) {
 			String paramName = makeParamName(key, value);
@@ -228,12 +290,24 @@ public class Overloader implements Arrow<Project, Project> {
 			return result;
 		}
 
+		/**
+		 * Make java doc.
+		 *
+		 * @param javaDoc the java doc
+		 * @param javaDok the java dok
+		 */
 		private void makeJavaDoc(JavadocComment javaDoc, JavadocComment javaDok) {
 			if (javaDok != null) {
 				javaDoc.setContent(javaDoc.getContent() + javaDok.getContent());
 			}
 		}
 
+		/**
+		 * Make throws.
+		 *
+		 * @param throwsList the throws list
+		 * @param throwz the throwz
+		 */
 		private void makeThrows(List<ClassOrInterfaceType> throwsList,
 				List<ClassOrInterfaceType> throwz) {
 			if (throwz != null) {
@@ -245,6 +319,12 @@ public class Overloader implements Arrow<Project, Project> {
 			}
 		}
 
+		/**
+		 * Make annotations.
+		 *
+		 * @param annotations the annotations
+		 * @param annots the annots
+		 */
 		private void makeAnnotations(List<AnnotationExpr> annotations,
 				List<AnnotationExpr> annots) {
 			if (annots != null) {
@@ -256,6 +336,15 @@ public class Overloader implements Arrow<Project, Project> {
 			}
 		}
 
+		/**
+		 * Make if.
+		 *
+		 * @param paramName the param name
+		 * @param parameters the parameters
+		 * @param body the body
+		 * @param ifStmt the if stmt
+		 * @return the if stmt
+		 */
 		private IfStmt makeIf(String paramName, List<Parameter> parameters,
 				BlockStmt body, IfStmt ifStmt) {
 			IfStmt ifStatement = NodeFacade.IfStmt();
@@ -272,6 +361,13 @@ public class Overloader implements Arrow<Project, Project> {
 			return ifStatement;
 		}
 
+		/**
+		 * Make local declarations.
+		 *
+		 * @param paramName the param name
+		 * @param parameters the parameters
+		 * @return the list
+		 */
 		private List<Statement> makeLocalDeclarations(String paramName,
 				List<Parameter> parameters) {
 			List<Statement> statements = new ArrayList<Statement>();
@@ -296,6 +392,13 @@ public class Overloader implements Arrow<Project, Project> {
 			return statements;
 		}
 
+		/**
+		 * Make condition.
+		 *
+		 * @param paramName the param name
+		 * @param parameters the parameters
+		 * @return the expression
+		 */
 		private Expression makeCondition(String paramName,
 				List<Parameter> parameters) {
 			int size = 0;
@@ -321,6 +424,12 @@ public class Overloader implements Arrow<Project, Project> {
 			return result;
 		}
 
+		/**
+		 * Fix type.
+		 *
+		 * @param type the type
+		 * @return the type
+		 */
 		private Type fixType(Type type) {
 			if (type instanceof ReferenceType) {
 				ReferenceType rType = (ReferenceType) type;
@@ -350,6 +459,12 @@ public class Overloader implements Arrow<Project, Project> {
 			return type;
 		}
 
+		/**
+		 * Make parameters.
+		 *
+		 * @param paramName the param name
+		 * @return the list
+		 */
 		private List<Parameter> makeParameters(String paramName) {
 			List<Parameter> parameters = new ArrayList<Parameter>();
 			Parameter parameter = NodeFacade.Parameter();
@@ -361,6 +476,13 @@ public class Overloader implements Arrow<Project, Project> {
 			return parameters;
 		}
 
+		/**
+		 * Make type.
+		 *
+		 * @param type the type
+		 * @param type2 the type2
+		 * @return the type
+		 */
 		private Type makeType(Type type, Type type2) {
 			// TODO type
 			if (!(type2 instanceof VoidType)) {
@@ -369,6 +491,13 @@ public class Overloader implements Arrow<Project, Project> {
 			return type;
 		}
 
+		/**
+		 * Make type parameters.
+		 *
+		 * @param typeParameters the type parameters
+		 * @param typeParameters2 the type parameters2
+		 * @return the list
+		 */
 		private List<TypeParameter> makeTypeParameters(
 				List<TypeParameter> typeParameters,
 				List<TypeParameter> typeParameters2) {
@@ -376,39 +505,85 @@ public class Overloader implements Arrow<Project, Project> {
 			return null;
 		}
 
+		/**
+		 * Make modifiers.
+		 *
+		 * @param modifiers the modifiers
+		 * @param itemModifiers the item modifiers
+		 * @return the int
+		 */
 		private int makeModifiers(int modifiers, int itemModifiers) {
 			// TODO modifiers
 			return Modifiers.addModifier(modifiers, itemModifiers);
 		}
 
+		/**
+		 * Make param name.
+		 *
+		 * @param value the value
+		 * @return the string
+		 */
 		private String makeParamName(Set<ConstructorDeclaration> value) {
 			return MAGIC_ARGUMENTS;
 		}
 
+		/**
+		 * Make param name.
+		 *
+		 * @param key the key
+		 * @param value the value
+		 * @return the string
+		 */
 		private String makeParamName(String key, Set<MethodDeclaration> value) {
 			return MAGIC_ARGUMENTS;
 		}
 	}
 
+	/**
+	 * The Class Context.
+	 */
 	private static class Context {
+		
+		/**
+		 * The data.
+		 */
 		private Data data;
 
+		/**
+		 * Gets the data.
+		 *
+		 * @return the data
+		 */
 		public Data getData() {
 			return data;
 		}
 
+		/**
+		 * Sets the data.
+		 *
+		 * @param data the new data
+		 */
 		public void setData(Data data) {
 			this.data = data;
 		}
 
+		/**
+		 * Process.
+		 */
 		public void process() {
 			data.process();
 		}
 
 	}
 
+	/**
+	 * The Class Visitor.
+	 */
 	private static class Visitor extends VoidVisitorAdapter<Context> {
 
+		/* (non-Javadoc)
+		 * @see com.digiarea.jse.visitor.VoidVisitorAdapter#visit(com.digiarea.jse.ClassDeclaration, java.lang.Object)
+		 */
 		@Override
 		public void visit(ClassDeclaration n, Context ctx) throws Exception {
 			Data oldData = ctx.getData();
@@ -418,6 +593,9 @@ public class Overloader implements Arrow<Project, Project> {
 			ctx.setData(oldData);
 		}
 
+		/* (non-Javadoc)
+		 * @see com.digiarea.jse.visitor.VoidVisitorAdapter#visit(com.digiarea.jse.ConstructorDeclaration, java.lang.Object)
+		 */
 		@Override
 		public void visit(ConstructorDeclaration n, Context ctx)
 				throws Exception {
@@ -425,6 +603,9 @@ public class Overloader implements Arrow<Project, Project> {
 			super.visit(n, ctx);
 		}
 
+		/* (non-Javadoc)
+		 * @see com.digiarea.jse.visitor.VoidVisitorAdapter#visit(com.digiarea.jse.EnumDeclaration, java.lang.Object)
+		 */
 		@Override
 		public void visit(EnumDeclaration n, Context ctx) throws Exception {
 			Data oldData = ctx.getData();
@@ -434,6 +615,9 @@ public class Overloader implements Arrow<Project, Project> {
 			ctx.setData(oldData);
 		}
 
+		/* (non-Javadoc)
+		 * @see com.digiarea.jse.visitor.VoidVisitorAdapter#visit(com.digiarea.jse.InterfaceDeclaration, java.lang.Object)
+		 */
 		@Override
 		public void visit(InterfaceDeclaration n, Context ctx) throws Exception {
 			Data oldData = ctx.getData();
@@ -443,6 +627,9 @@ public class Overloader implements Arrow<Project, Project> {
 			ctx.setData(oldData);
 		}
 
+		/* (non-Javadoc)
+		 * @see com.digiarea.jse.visitor.VoidVisitorAdapter#visit(com.digiarea.jse.MethodDeclaration, java.lang.Object)
+		 */
 		@Override
 		public void visit(MethodDeclaration n, Context ctx) throws Exception {
 			ctx.getData().addMethod(n);
@@ -451,6 +638,9 @@ public class Overloader implements Arrow<Project, Project> {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.common.Arrow#arrow(java.lang.Object)
+	 */
 	@Override
 	public Project arrow(Project input) throws Exception {
 		new Visitor().visit(input, new Context());

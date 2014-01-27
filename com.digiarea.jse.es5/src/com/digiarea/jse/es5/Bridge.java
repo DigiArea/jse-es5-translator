@@ -1,6 +1,13 @@
-/*
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2011 - 2014 DigiArea, Inc. and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     DigiArea, Inc. - initial API and implementation
+ *******************************************************************************/
 package com.digiarea.jse.es5;
 
 import java.util.HashMap;
@@ -18,11 +25,26 @@ import com.digiarea.jse.builder.SimpleModelHierarchy;
 import com.digiarea.jse.es5.visitor.Overloader;
 import com.digiarea.jse.es5.visitor.Visitor;
 
+/**
+ * The Class Bridge.
+ */
 public class Bridge implements Arrow<Project, com.digiarea.es5.Project> {
 
+	/**
+	 * The quiver.
+	 */
 	private Quiver quiver = new Quiver();
+	
+	/**
+	 * The proces bodies.
+	 */
 	private boolean procesBodies = true;
 
+	/**
+	 * Instantiates a new bridge.
+	 *
+	 * @param procesBodies the proces bodies
+	 */
 	public Bridge(boolean procesBodies) {
 		super();
 		this.procesBodies = procesBodies;
@@ -58,11 +80,17 @@ public class Bridge implements Arrow<Project, com.digiarea.es5.Project> {
 		quiver.addArrow(new Renamer(classes));
 	}
 
+	/**
+	 * Instantiates a new bridge.
+	 */
 	public Bridge() {
 		this(true);
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.common.Arrow#arrow(java.lang.Object)
+	 */
 	@Override
 	public com.digiarea.es5.Project arrow(Project input) throws Exception {
 		Project p = quiver.arrow(input);

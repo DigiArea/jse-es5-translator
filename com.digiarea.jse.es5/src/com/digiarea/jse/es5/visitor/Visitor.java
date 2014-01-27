@@ -1,6 +1,13 @@
-/*
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2011 - 2014 DigiArea, Inc. and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     DigiArea, Inc. - initial API and implementation
+ *******************************************************************************/
 package com.digiarea.jse.es5.visitor;
 
 import java.util.ArrayList;
@@ -100,37 +107,120 @@ import com.digiarea.jse.es5.Context;
 import com.digiarea.jse.utils.NodeUtils;
 import com.digiarea.jse.visitor.GenericVisitor;
 
+/**
+ * The Class Visitor.
+ */
 public class Visitor implements GenericVisitor<Node, Context> {
 
+	/**
+	 * The Constant EMPTY.
+	 */
 	private static final String EMPTY = "";
+	
+	/**
+	 * The Constant OBJECT.
+	 */
 	private static final String OBJECT = "object";
+	
+	/**
+	 * The Constant UNDEFINED.
+	 */
 	private static final String UNDEFINED = "undefined";
+	
+	/**
+	 * The Constant NUMBER.
+	 */
 	private static final String NUMBER = "number";
+	
+	/**
+	 * The Constant STRING.
+	 */
 	private static final String STRING = "string";
+	
+	/**
+	 * The Constant ERROR.
+	 */
 	private static final String ERROR = "Error";
+	
+	/**
+	 * The Constant BOOLEAN.
+	 */
 	private static final String BOOLEAN = "boolean";
 	// closure
+	/**
+	 * The Constant GOOG_BASE.
+	 */
 	private static final String GOOG_BASE = "goog.base";
+	
+	/**
+	 * The Constant GOOG_REQUIRE.
+	 */
 	private static final String GOOG_REQUIRE = "goog.require";
+	
+	/**
+	 * The Constant GOOG_INHERITS.
+	 */
 	private static final String GOOG_INHERITS = "goog.inherits";
+	
+	/**
+	 * The Constant GOOG_PROVIDE.
+	 */
 	private static final String GOOG_PROVIDE = "goog.provide";
+	
+	/**
+	 * The Constant GOOG_ISSTRING.
+	 */
 	private static final String GOOG_ISSTRING = "goog.isString";
+	
+	/**
+	 * The Constant GOOG_ISNUMBER.
+	 */
 	private static final String GOOG_ISNUMBER = "goog.isNumber";
 
 	// java
+	/**
+	 * The Constant JAVA_LANG_INTEGER.
+	 */
 	private static final String JAVA_LANG_INTEGER = "java.lang.Integer";
+	
+	/**
+	 * The Constant JAVA_LANG_STRING.
+	 */
 	private static final String JAVA_LANG_STRING = "java.lang.String";
 	// private static final String JAVA_LANG_EXCEPTION = "java.lang.Exception";
+	/**
+	 * The Constant JAVA_LANG_OBJECT.
+	 */
 	private static final String JAVA_LANG_OBJECT = "java.lang.Object";
+	
+	/**
+	 * The types.
+	 */
 	private static List<String> types = Arrays.asList(JAVA_LANG_STRING,
 			JAVA_LANG_INTEGER);
 
 	// javascript
+	/**
+	 * The Constant PROTOTYPE.
+	 */
 	private static final String PROTOTYPE = "prototype";
 
+	/**
+	 * The model hierarchy.
+	 */
 	private ModelHierarchy modelHierarchy;
+	
+	/**
+	 * The proces bodies.
+	 */
 	private boolean procesBodies = true;
 
+	/**
+	 * Instantiates a new visitor.
+	 *
+	 * @param modelHierarchy the model hierarchy
+	 * @param procesBodies the proces bodies
+	 */
 	public Visitor(ModelHierarchy modelHierarchy, boolean procesBodies) {
 		super();
 		this.modelHierarchy = modelHierarchy;
@@ -142,10 +232,23 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		this.procesBodies = procesBodies;
 	}
 
+	/**
+	 * Instantiates a new visitor.
+	 *
+	 * @param modelHierarchy the model hierarchy
+	 */
 	public Visitor(ModelHierarchy modelHierarchy) {
 		this(modelHierarchy, true);
 	}
 
+	/**
+	 * Make type declaration.
+	 *
+	 * @param n the n
+	 * @param ctx the ctx
+	 * @return the statement
+	 * @throws Exception the exception
+	 */
 	private Statement makeTypeDeclaration(TypeDeclaration n, Context ctx)
 			throws Exception {
 		TypeDeclaration oldDecl = ctx.getTypeDeclaration();
@@ -224,6 +327,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/**
+	 * Make prototype.
+	 *
+	 * @param decl the decl
+	 * @param name the name
+	 * @param expression the expression
+	 * @return the statement
+	 */
 	private Statement makePrototype(String decl, String name,
 			Expression expression) {
 		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
@@ -235,6 +346,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				AssignOperator.assign));
 	}
 
+	/**
+	 * Make constructor.
+	 *
+	 * @param decl the decl
+	 * @param expression the expression
+	 * @return the statement
+	 */
 	private Statement makeConstructor(String decl, Expression expression) {
 		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
 				NodeFacade.FieldAccessExpression(
@@ -242,6 +360,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				AssignOperator.assign));
 	}
 
+	/**
+	 * Make static.
+	 *
+	 * @param decl the decl
+	 * @param name the name
+	 * @param expression the expression
+	 * @return the statement
+	 */
 	private Statement makeStatic(String decl, String name, Expression expression) {
 		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
 				NodeFacade.FieldAccessExpression(
@@ -250,12 +376,28 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				AssignOperator.assign));
 	}
 
+	/**
+	 * Make simple.
+	 *
+	 * @param name the name
+	 * @param expression the expression
+	 * @return the statement
+	 */
 	private Statement makeSimple(String name, FunctionExpression expression) {
 		return NodeFacade.ExpressionStatement(NodeFacade.AssignmentExpression(
 				NodeFacade.IdentifierName(name), expression,
 				AssignOperator.assign));
 	}
 
+	/**
+	 * Make variable.
+	 *
+	 * @param ctx the ctx
+	 * @param id the id
+	 * @param init the init
+	 * @return the node
+	 * @throws Exception the exception
+	 */
 	private Node makeVariable(Context ctx, String id,
 			com.digiarea.jse.Expression init) throws Exception {
 		com.digiarea.jse.Node parent = ctx.getParent();
@@ -297,6 +439,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		}
 	}
 
+	/**
+	 * Gets the default.
+	 *
+	 * @param type the type
+	 * @return the default
+	 */
 	private Expression getDefault(Type type) {
 		if (type instanceof PrimitiveType) {
 			if (((PrimitiveType) type).getType() == Primitive.Boolean) {
@@ -309,12 +457,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.AnnotationDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.AnnotationDeclaration n, Context ctx)
 			throws Exception {
 		return makeTypeDeclaration(n, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.AnnotationMemberDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.AnnotationMemberDeclaration n,
 			Context ctx) throws Exception {
@@ -340,6 +494,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return statement;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ArrayAccessExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ArrayAccessExpr n, Context ctx)
 			throws Exception {
@@ -353,6 +510,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ArrayCreationExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ArrayCreationExpr n, Context ctx)
 			throws Exception {
@@ -373,6 +533,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ArrayInitializerExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ArrayInitializerExpr n, Context ctx)
 			throws Exception {
@@ -389,12 +552,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.AssertStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.AssertStmt n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.AssignExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.AssignExpr n, Context ctx)
 			throws Exception {
@@ -409,6 +578,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.AssignExpr.AssignOperator, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.AssignExpr.AssignOperator n, Context ctx)
 			throws Exception {
@@ -456,6 +628,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.BinaryExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.BinaryExpr n, Context ctx)
 			throws Exception {
@@ -470,6 +645,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.BinaryExpr.BinaryOperator, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.BinaryExpr.BinaryOperator n, Context ctx)
 			throws Exception {
@@ -540,6 +718,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.BlockComment, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.BlockComment n, Context ctx)
 			throws Exception {
@@ -548,6 +729,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.BlockStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.BlockStmt n, Context ctx)
 			throws Exception {
@@ -564,12 +748,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.BooleanLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.BooleanLiteralExpr n, Context ctx)
 			throws Exception {
 		return NodeFacade.BooleanLiteral(n.isValue());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.BreakStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.BreakStmt n, Context ctx)
 			throws Exception {
@@ -578,12 +768,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.CastExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.CastExpr n, Context ctx)
 			throws Exception {
 		return (Expression) n.getExpression().accept(this, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.CatchClause, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.CatchClause n, Context ctx)
 			throws Exception {
@@ -596,6 +792,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.CharLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.CharLiteralExpr n, Context ctx)
 			throws Exception {
@@ -603,12 +802,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 				.charAt(0)));
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ClassDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ClassDeclaration n, Context ctx)
 			throws Exception {
 		return makeTypeDeclaration(n, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ClassExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ClassExpr n, Context ctx)
 			throws Exception {
@@ -623,6 +828,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ClassOrInterfaceType, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ClassOrInterfaceType n, Context ctx)
 			throws Exception {
@@ -649,15 +857,30 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/**
+	 * The requires.
+	 */
 	private LinkedHashSet<String> requires;
+	
+	/**
+	 * The provide.
+	 */
 	private String provide;
 
+	/**
+	 * Adds the require.
+	 *
+	 * @param require the require
+	 */
 	private void addRequire(String require) {
 		if (!require.equals(provide)) {
 			requires.add(require);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.CompilationUnit, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.CompilationUnit n, Context ctx)
 			throws Exception {
@@ -702,6 +925,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/**
+	 * Creates the closure require.
+	 *
+	 * @param n the n
+	 * @param ctx the ctx
+	 * @return the expression statement
+	 * @throws Exception the exception
+	 */
 	private ExpressionStatement createClosureRequire(String n, Context ctx)
 			throws Exception {
 		CallExpression provideExpression = NodeFacade.CallExpression();
@@ -714,6 +945,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.ExpressionStatement(provideExpression);
 	}
 
+	/**
+	 * Creates the closure inherit.
+	 *
+	 * @param clazz the clazz
+	 * @param ctx the ctx
+	 * @return the expression statement
+	 * @throws Exception the exception
+	 */
 	private ExpressionStatement createClosureInherit(ClassDeclaration clazz,
 			Context ctx) throws Exception {
 		if (clazz.getExtendsType() != null) {
@@ -733,6 +972,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/**
+	 * Creates the closure provide.
+	 *
+	 * @param n the n
+	 * @param ctx the ctx
+	 * @return the expression statement
+	 * @throws Exception the exception
+	 */
 	private ExpressionStatement createClosureProvide(
 			com.digiarea.jse.CompilationUnit n, Context ctx) throws Exception {
 		CallExpression provideExpression = NodeFacade.CallExpression();
@@ -746,6 +993,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.ExpressionStatement(provideExpression);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ConditionalExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ConditionalExpr n, Context ctx)
 			throws Exception {
@@ -764,6 +1014,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ConstructorDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ConstructorDeclaration n, Context ctx)
 			throws Exception {
@@ -798,6 +1051,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return statement;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ContinueStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ContinueStmt n, Context ctx)
 			throws Exception {
@@ -806,6 +1062,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.DoStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.DoStmt n, Context ctx) throws Exception {
 		DoWhileStatement img = NodeFacade.DoWhileStatement();
@@ -818,6 +1077,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.DoubleLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.DoubleLiteralExpr n, Context ctx)
 			throws Exception {
@@ -829,6 +1091,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.DecimalLiteral(expr);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.EmptyMemberDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.EmptyMemberDeclaration n, Context ctx)
 			throws Exception {
@@ -839,18 +1104,27 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.EmptyStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.EmptyStmt n, Context ctx)
 			throws Exception {
 		return NodeFacade.EmptyStatement();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.EmptyTypeDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.EmptyTypeDeclaration n, Context ctx)
 			throws Exception {
 		return makeTypeDeclaration(n, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.EnclosedExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.EnclosedExpr n, Context ctx)
 			throws Exception {
@@ -861,6 +1135,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.EnumConstantDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.EnumConstantDeclaration n, Context ctx)
 			throws Exception {
@@ -893,6 +1170,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return statement;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.EnumDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.EnumDeclaration n, Context ctx)
 			throws Exception {
@@ -905,12 +1185,23 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return makeTypeDeclaration(n, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ExplicitConstructorInvocationStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ExplicitConstructorInvocationStmt n,
 			Context ctx) throws Exception {
 		return createClosureSuperCall(n, ctx);
 	}
 
+	/**
+	 * Creates the closure super call.
+	 *
+	 * @param n the n
+	 * @param ctx the ctx
+	 * @return the expression statement
+	 * @throws Exception the exception
+	 */
 	private ExpressionStatement createClosureSuperCall(
 			com.digiarea.jse.ExplicitConstructorInvocationStmt n, Context ctx)
 			throws Exception {
@@ -943,6 +1234,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ExpressionStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ExpressionStmt n, Context ctx)
 			throws Exception {
@@ -953,6 +1247,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.FieldAccessExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.FieldAccessExpr n, Context ctx)
 			throws Exception {
@@ -967,6 +1264,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.FieldDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.FieldDeclaration n, Context ctx)
 			throws Exception {
@@ -996,6 +1296,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return statement;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ForeachStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ForeachStmt n, Context ctx)
 			throws Exception {
@@ -1012,6 +1315,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ForStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ForStmt n, Context ctx) throws Exception {
 		ForStatement img = NodeFacade.ForStatement();
@@ -1042,6 +1348,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.IfStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.IfStmt n, Context ctx) throws Exception {
 		IfStatement img = NodeFacade.IfStatement();
@@ -1057,6 +1366,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ImportDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ImportDeclaration n, Context ctx)
 			throws Exception {
@@ -1064,6 +1376,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.InitializerDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.InitializerDeclaration n, Context ctx)
 			throws Exception {
@@ -1074,6 +1389,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.InstanceOfExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.InstanceOfExpr n, Context ctx)
 			throws Exception {
@@ -1109,18 +1427,27 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.IntegerLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.IntegerLiteralExpr n, Context ctx)
 			throws Exception {
 		return NodeFacade.DecimalLiteral(n.getValue());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.InterfaceDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.InterfaceDeclaration n, Context ctx)
 			throws Exception {
 		return makeTypeDeclaration(n, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.JavadocComment, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.JavadocComment n, Context ctx)
 			throws Exception {
@@ -1240,6 +1567,15 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/**
+	 * Js doc return.
+	 *
+	 * @param type the type
+	 * @param content the content
+	 * @param ctx the ctx
+	 * @return the string
+	 * @throws Exception the exception
+	 */
 	private String jsDocReturn(Type type, String content, Context ctx)
 			throws Exception {
 		String result = content;
@@ -1256,6 +1592,15 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return result;
 	}
 
+	/**
+	 * Js doc parameters.
+	 *
+	 * @param parameters the parameters
+	 * @param content the content
+	 * @param ctx the ctx
+	 * @return the string
+	 * @throws Exception the exception
+	 */
 	private String jsDocParameters(List<com.digiarea.jse.Parameter> parameters,
 			String content, Context ctx) throws Exception {
 		String result = content;
@@ -1278,6 +1623,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return result;
 	}
 
+	/**
+	 * Gets the JS doc type.
+	 *
+	 * @param type the type
+	 * @param ctx the ctx
+	 * @return the JS doc type
+	 * @throws Exception the exception
+	 */
 	private String getJSDocType(Type type, Context ctx) throws Exception {
 		if (type != null) {
 			if (type instanceof VoidType) {
@@ -1357,6 +1710,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/**
+	 * Gets the JS doc modifiers.
+	 *
+	 * @param modifier the modifier
+	 * @return the JS doc modifiers
+	 */
 	private String getJSDocModifiers(int modifier) {
 		String content = EMPTY;
 		if (Modifiers.isPrivate(modifier)) {
@@ -1367,6 +1726,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return content;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.LabeledStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.LabeledStmt n, Context ctx)
 			throws Exception {
@@ -1378,6 +1740,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.LineComment, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.LineComment n, Context ctx)
 			throws Exception {
@@ -1386,6 +1751,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.LongLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.LongLiteralExpr n, Context ctx)
 			throws Exception {
@@ -1393,18 +1761,27 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.HexIntegerLiteral(expr);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.MarkerAnnotationExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.MarkerAnnotationExpr n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.MemberValuePair, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.MemberValuePair n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.MethodCallExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.MethodCallExpr n, Context ctx)
 			throws Exception {
@@ -1439,6 +1816,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.MethodDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.MethodDeclaration n, Context ctx)
 			throws Exception {
@@ -1478,6 +1858,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return statement;
 	}
 
+	/**
+	 * Gets the full name.
+	 *
+	 * @param ctx the ctx
+	 * @return the full name
+	 */
 	private String getFullName(Context ctx) {
 		// return ctx.getCompilationUnit().getPackageDeclaration().getName()
 		// .toString()
@@ -1485,12 +1871,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return ctx.getEnclosure().toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.Modifiers, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.Modifiers n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.NameExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.NameExpr n, Context ctx)
 			throws Exception {
@@ -1504,6 +1896,12 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/**
+	 * Fix namespace.
+	 *
+	 * @param name the name
+	 * @return the string
+	 */
 	private String fixNamespace(String name) {
 		// nothing to do
 		// if (name.equals("java")) {
@@ -1518,18 +1916,31 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return name;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.NormalAnnotationExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.NormalAnnotationExpr n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.NullLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.NullLiteralExpr n, Context ctx)
 			throws Exception {
 		return NodeFacade.NullLiteral();
 	}
 
+	/**
+	 * Can add require.
+	 *
+	 * @param type the type
+	 * @param ctx the ctx
+	 * @return true, if successful
+	 */
 	private boolean canAddRequire(ClassOrInterfaceType type, Context ctx) {
 		if ((modelHierarchy.getBuilder(type.getName().toString(),
 				BuilderType.CLASS) != null && modelHierarchy.getUpdater(type
@@ -1543,6 +1954,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ObjectCreationExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ObjectCreationExpr n, Context ctx)
 			throws Exception {
@@ -1614,6 +2028,14 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.NewExpression(img, initializer);
 	}
 
+	/**
+	 * Make put assignment.
+	 *
+	 * @param statement the statement
+	 * @param ctx the ctx
+	 * @return the put assignment
+	 * @throws Exception the exception
+	 */
 	private PutAssignment makePutAssignment(Statement statement, Context ctx)
 			throws Exception {
 		if (statement instanceof ExpressionStatement) {
@@ -1633,6 +2055,13 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/**
+	 * Removes the generic types.
+	 *
+	 * @param type the type
+	 * @return the class or interface type
+	 * @throws Exception the exception
+	 */
 	private ClassOrInterfaceType removeGenericTypes(ClassOrInterfaceType type)
 			throws Exception {
 		ClassOrInterfaceType newType = (ClassOrInterfaceType) type.clone();
@@ -1640,6 +2069,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return newType;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.PackageDeclaration, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.PackageDeclaration n, Context ctx)
 			throws Exception {
@@ -1647,6 +2079,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.Parameter, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.Parameter n, Context ctx)
 			throws Exception {
@@ -1657,6 +2092,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.PrimitiveType, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.PrimitiveType n, Context ctx)
 			throws Exception {
@@ -1667,12 +2105,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.PrimitiveType.Primitive, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.PrimitiveType.Primitive n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.Project, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.Project n, Context ctx) throws Exception {
 		Project img = NodeFacade.Project();
@@ -1690,6 +2134,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.QualifiedNameExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.QualifiedNameExpr n, Context ctx)
 			throws Exception {
@@ -1711,6 +2158,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ReferenceType, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ReferenceType n, Context ctx)
 			throws Exception {
@@ -1720,6 +2170,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ReturnStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ReturnStmt n, Context ctx)
 			throws Exception {
@@ -1730,24 +2183,36 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.SingleMemberAnnotationExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.SingleMemberAnnotationExpr n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.StringLiteralExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.StringLiteralExpr n, Context ctx)
 			throws Exception {
 		return NodeFacade.StringLiteralDouble(n.getValue());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.SuperExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.SuperExpr n, Context ctx)
 			throws Exception {
 		return NodeFacade.ThisExpression();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.SwitchEntryStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.SwitchEntryStmt n, Context ctx)
 			throws Exception {
@@ -1767,6 +2232,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.SwitchStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.SwitchStmt n, Context ctx)
 			throws Exception {
@@ -1799,6 +2267,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.SynchronizedStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.SynchronizedStmt n, Context ctx)
 			throws Exception {
@@ -1812,6 +2283,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ThisExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ThisExpr n, Context ctx)
 			throws Exception {
@@ -1820,6 +2294,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ThrowStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.ThrowStmt n, Context ctx)
 			throws Exception {
@@ -1834,6 +2311,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.TryStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.TryStmt n, Context ctx) throws Exception {
 		TryStatement img = NodeFacade.TryStatement();
@@ -1855,18 +2335,27 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.TypeDeclarationStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.TypeDeclarationStmt n, Context ctx)
 			throws Exception {
 		return n.getTypeDeclaration().accept(this, ctx);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.TypeParameter, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.TypeParameter n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.UnaryExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.UnaryExpr n, Context ctx)
 			throws Exception {
@@ -1878,6 +2367,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.UnaryExpr.UnaryOperator, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.UnaryExpr.UnaryOperator n, Context ctx)
 			throws Exception {
@@ -1913,6 +2405,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.VariableDeclarationExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.VariableDeclarationExpr n, Context ctx)
 			throws Exception {
@@ -1932,6 +2427,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.VariableDeclarator, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.VariableDeclarator n, Context ctx)
 			throws Exception {
@@ -1940,12 +2438,18 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return makeVariable(ctx, id.getName(), init);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.VariableDeclaratorId, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.VariableDeclaratorId n, Context ctx)
 			throws Exception {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.VoidType, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.VoidType n, Context ctx)
 			throws Exception {
@@ -1953,6 +2457,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.IdentifierName(n.toString());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.WhileStmt, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.WhileStmt n, Context ctx)
 			throws Exception {
@@ -1966,6 +2473,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return img;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.WildcardType, java.lang.Object)
+	 */
 	@Override
 	public Node visit(com.digiarea.jse.WildcardType n, Context ctx)
 			throws Exception {
@@ -1973,36 +2483,54 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return NodeFacade.IdentifierName(n.toString());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ArraySlot, java.lang.Object)
+	 */
 	@Override
 	public Node visit(ArraySlot n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.Ellipsis, java.lang.Object)
+	 */
 	@Override
 	public Node visit(Ellipsis n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.LambdaBlock, java.lang.Object)
+	 */
 	@Override
 	public Node visit(LambdaBlock n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.LambdaExpr, java.lang.Object)
+	 */
 	@Override
 	public Node visit(LambdaExpr n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.CreationReference, java.lang.Object)
+	 */
 	@Override
 	public Node visit(CreationReference n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.ExpressionMethodReference, java.lang.Object)
+	 */
 	@Override
 	public Node visit(ExpressionMethodReference n, Context ctx)
 			throws Exception {
@@ -2010,18 +2538,27 @@ public class Visitor implements GenericVisitor<Node, Context> {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.SuperMethodReference, java.lang.Object)
+	 */
 	@Override
 	public Node visit(SuperMethodReference n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.TypeMethodReference, java.lang.Object)
+	 */
 	@Override
 	public Node visit(TypeMethodReference n, Context ctx) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.digiarea.jse.visitor.GenericVisitor#visit(com.digiarea.jse.NodeList, java.lang.Object)
+	 */
 	@Override
 	public <E extends com.digiarea.jse.Node> Node visit(NodeList<E> n,
 			Context ctx) throws Exception {
