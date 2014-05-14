@@ -880,8 +880,9 @@ public class Visitor implements GenericVisitor<Node, Context> {
 	@Override
 	public Node visit(com.digiarea.jse.CharLiteralExpr n, Context ctx)
 			throws Exception {
-		return NodeFacade.StringLiteralSingle(String.valueOf((int) n.getValue()
-				.charAt(0)));
+		String value = n.getValue();
+		return NodeFacade.StringLiteralSingle(value.substring(1,
+				value.length() - 1));
 	}
 
 	/*
